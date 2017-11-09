@@ -5,32 +5,33 @@ var Wasp97=function(){
 				for the Thermodynamic Properties of Water and Steam
 				(The revision only relates to the extension of region 5 to 50 MPa)" . The following is abbrev. as if97
 	*/
-	if(arguments.length==1 && typeof(arguments[0])=='number'){
-		var in1=arguments[0];
-		var in_method='p';
-	}else if(arguments.length==2 && typeof(arguments[0])=='number' && typeof(arguments[1])=='number'){
-		var in1=arguments[0];
-		var in2=arguments[1];
-		var in_method='pt';
-	}else if(arguments.length==2 && typeof(arguments[0])=='number' && typeof(arguments[1])=='string'){
-		var in1=arguments[0];
-		var in_method=arguments[1];
-		if(in_method!='p' || in_method!='t'){
-			in_method='p'
+	/*
+	p:Mpa, t:℃, T:K, h:kJ/kg, s:kJ/kg.K,v:kg/㎥
+	*/
+	if (arguments.length == 1 && typeof(arguments[0]) == 'number') {
+		var in1 = arguments[0];
+		var in_method = 'p';
+	} else if (arguments.length == 2 && typeof(arguments[0]) == 'number' && typeof(arguments[1]) == 'number') {
+		var in1 = arguments[0];
+		var in2 = arguments[1];
+		var in_method = 'pt';
+	} else if (arguments.length == 2 && typeof(arguments[0]) == 'number' && typeof(arguments[1]) == 'string') {
+		var in1 = arguments[0];
+		var in_method = arguments[1];
+		if (in_method != 'p' || in_method != 't') {
+			in_method = 'p'
 		}
-	}else if(arguments.length==3 && typeof(arguments[0])=='number' && typeof(arguments[1])=='number' 
-			&& typeof(arguments[2])=='string'){
-		var in1=arguments[0];
-		var in2=arguments[1];
-		var in_method=arguments[2];
-		if(in_method!='pt' && in_method!='ph' && in_method!='ps' && in_method!='pv' && in_method!='px'
-			&& in_method!='th' && in_method!='ts' && in_method!='tv' && in_method!='tx'){
-			in_method='pt'
+	} else if (arguments.length == 3 && typeof(arguments[0]) == 'number' && typeof(arguments[1]) == 'number' && typeof(arguments[2]) == 'string') {
+		var in1 = arguments[0];
+		var in2 = arguments[1];
+		var in_method = arguments[2];
+		if (in_method != 'pt' && in_method != 'ph' && in_method != 'ps' && in_method != 'pv' && in_method != 'px' && in_method != 'th' && in_method != 'ts' && in_method != 'tv' && in_method != 'tx') {
+			in_method = 'pt'
 		}
-	}else{
-		var in1=1;
-		var in2=200;
-		var in_method='pt';
+	} else {
+		var in1 = 1;
+		var in2 = 200;
+		var in_method = 'pt';
 	}
 	this.in_method=in_method;
 	this.p=0;
@@ -39,55 +40,63 @@ var Wasp97=function(){
 	this.s=0;
 	this.v=0;
 	this.x=0;
-	switch(this.in_method){
+	switch (this.in_method) {
 		case 'pt':
-			this.p=in1;
-			this.t=in2;
+			this.p = in1;
+			this.t = in2;
 			break;
 		case 'ph':
-			this.p=in1;
-			this.h=in2;
+			this.p = in1;
+			this.h = in2;
 			break;
 		case 'ps':
-			this.p=in1;
-			this.s=in2;
+			this.p = in1;
+			this.s = in2;
 			break;
 		case 'pv':
-			this.p=in1;
-			this.v=in2;
+			this.p = in1;
+			this.v = in2;
 			break;
 		case 'px':
-			this.p=in1;
-			this.x=in2;
+			this.p = in1;
+			this.x = in2;
 			break;
 		case 'th':
-			this.t=in1;
-			this.h=in2;
+			this.t = in1;
+			this.h = in2;
 			break;
 		case 'ts':
-			this.t=in1;
-			this.s=in2;
+			this.t = in1;
+			this.s = in2;
 			break;
 		case 'tv':
-			this.t=in1;
-			this.v=in2;
+			this.t = in1;
+			this.v = in2;
 			break;
 		case 'tx':
-			this.t=in1;
-			this.x=in2;
+			this.t = in1;
+			this.x = in2;
 			break;
 		case 'p':
-			this.p=in1;
+			this.p = in1;
 			break;
 		case 't':
-			this.t=in1;
+			this.t = in1;
 			break;
 	}
 
 	Wasp97.prototype.R=0.461526;
 	Wasp97.prototype.Tc= 647.096;
-	Wasp97.prototype.pc = 22.064;
+	Wasp97.prototype.Pc = 22.064;
 	Wasp97.prototype.rhoc = 322;
+	Wasp97.prototype.T0=273.15;
+	Wasp97.prototype.boundary={
+		Tmin1:273.15,Tmax1:1073.15,
+		Tmin2:1073.15,Tmax2:2273.15,
+		Pmin1:0,Pmax1:100,
+		Pmin2:0,Pmax2:50
+	}
+
 	Wasp97.prototype.table1={ //if97 table1 page6
 		ni:[
 			0.34805185628969E3,
@@ -638,22 +647,223 @@ var Wasp97=function(){
 			1,2,3,3,9,7]
 	};
 
+	Wasp97.prototype.B23_eq5=function(t){
+		var Pstar=1; //p* 1Mpa
+		var Tstar=1; //T* 1K
+		var theta=(t+this.T0)/Tstar;		
+		var pi=this.table1.ni[0]+this.table1.ni[1]*theta+this.table1.ni[2]*Math.pow(theta,2);
+		return Pstar*pi;
+	}
 
-	Wasp97.prototype.pt2h=function(){
-		console.log(this.p+this.in_method);
-	};
+	Wasp97.prototype.B23_eq6=function(p){
+		var Pstar=1; //p* 1Mpa
+		var Tstar=1; //T* 1K
+		var pi=p/Pstar;
+		var theta=this.table1.ni[3]+Math.sqrt((pi-this.table1.ni[4])/this.table1.ni[2]);
+		return Tstar*theta-this.T0;
+	}
+
+	Wasp97.prototype.Reg1_eq7=function(p,t){//return Gibbs free energy :γ= g/(RT )
+		var Pstar=16.53; //p* 16.53Mpa
+		var Tstar=1386; //T* 1386K
+		var pi=p/Pstar;
+		var tau=Tstar/(t+this.T0);
+		var ni=this.table2.ni;
+		var Ii=this.table2.Ii;
+		var Ji=this.table2.Ji;
+		var gamma=0;
+		for (var i = 0;i<ni.length; i++) {
+			gamma+=ni[i]*Math.pow(7.1-pi,Ii[i])*Math.pow(tau-1.222,Ji[i]);
+		}
+		return gamma;
+	}
+
+	Wasp97.prototype.Reg1_eq7_pi=function(p,t){//return :γπ,see to if97--table4
+		var Pstar=16.53; //p* 16.53Mpa
+		var Tstar=1386; //T* 1386K
+		var pi=p/Pstar;
+		var tau=Tstar/(t+this.T0);
+		var ni=this.table2.ni;
+		var Ii=this.table2.Ii;
+		var Ji=this.table2.Ji;
+		var gamma_pi=0;
+		for (var i = 0;i<ni.length; i++) {
+			gamma_pi+=-ni[i]*Ii[i]*Math.pow(7.1-pi,Ii[i]-1)*Math.pow(tau-1.222,Ji[i]);
+		}
+		return gamma_pi;
+	}
+
+	Wasp97.prototype.Reg1_eq7_tau=function(p,t){//return :γτ,see to if97--table4
+		var Pstar=16.53; //p* 16.53Mpa
+		var Tstar=1386; //T* 1386K
+		var pi=p/Pstar;
+		var tau=Tstar/(t+this.T0);
+		var ni=this.table2.ni;
+		var Ii=this.table2.Ii;
+		var Ji=this.table2.Ji;
+		var gamma_tau=0;
+		for (var i = 0;i<ni.length; i++) {
+			gamma_tau+=ni[i]*Math.pow(7.1-pi,Ii[i])*Ji[i]*Math.pow(tau-1.222,Ji[i]-1);
+		}
+		return gamma_tau;
+	}
+
+	Wasp97.prototype.Reg1_eq7_pi2=function(p,t){//return :γππ,see to if97--table4
+		var Pstar=16.53; //p* 16.53Mpa
+		var Tstar=1386; //T* 1386K
+		var pi=p/Pstar;
+		var tau=Tstar/(t+this.T0);
+		var ni=this.table2.ni;
+		var Ii=this.table2.Ii;
+		var Ji=this.table2.Ji;
+		var gamma_pi2=0;
+		for (var i = 0;i<ni.length; i++) {
+			gamma_pi2+=ni[i]*Ii[i]*(Ii[i]-1)*Math.pow(7.1-pi,Ii[i]-2)*Math.pow(tau-1.222,Ji[i]);
+		}
+		return gamma_pi2;
+	}
+
+	Wasp97.prototype.Reg1_eq7_tau2=function(p,t){//return :γττ,see to if97--table4
+		var Pstar=16.53; //p* 16.53Mpa
+		var Tstar=1386; //T* 1386K
+		var pi=p/Pstar;
+		var tau=Tstar/(t+this.T0);
+		var ni=this.table2.ni;
+		var Ii=this.table2.Ii;
+		var Ji=this.table2.Ji;
+		var gamma_tau2=0;
+		for (var i = 0;i<ni.length; i++) {
+			gamma_tau2+=ni[i]*Math.pow(7.1-pi,Ii[i])*Ji[i]*(Ji[i]-1)*Math.pow(tau-1.222,Ji[i]-2);
+		}
+		return gamma_tau2;
+	}
+
+	Wasp97.prototype.Reg1_eq7_pitau=function(p,t){//return :γπτ,see to if97--table4
+		var Pstar=16.53; //p* 16.53Mpa
+		var Tstar=1386; //T* 1386K
+		var pi=p/Pstar;
+		var tau=Tstar/(t+this.T0);
+		var ni=this.table2.ni;
+		var Ii=this.table2.Ii;
+		var Ji=this.table2.Ji;
+		var gamma_pitau=0;
+		for (var i = 0;i<ni.length; i++) {
+			gamma_pitau+=-ni[i]*Ii[i]*Math.pow(7.1-pi,Ii[i]-1)*Ji[i]*Math.pow(tau-1.222,Ji[i]-1);
+		}
+		return gamma_pitau;
+	}
+
+	Wasp97.prototype.Reg1_pt2h=function(p,t){//return :Specific enthalpy,see to if97--table3
+		var Tstar=1386; //T* 1386K
+		var tau=Tstar/(t+this.T0);
+		var gamma_tau=this.Reg1_eq7_tau(p,t);
+		var h=tau*gamma_tau*(t+this.T0)*this.R;
+		return h;
+	}
+
+	Wasp97.prototype.Reg1_pt2s=function(p,t){//return :Specific entropy,see to if97--table3
+		var Tstar=1386; //T* 1386K
+		var tau=Tstar/(t+this.T0);
+		var gamma=this.Reg1_eq7(p,t);
+		var gamma_tau=this.Reg1_eq7_tau(p,t);
+		var s=(tau*gamma_tau-gamma)*this.R;
+		return s;
+	}
+
+	Wasp97.prototype.Reg1_pt2v=function(p,t){//return :Specific volume,see to if97--table3
+		var Pstar=16.53; //p* 16.53Mpa
+		var pi=p/Pstar;
+		var gamma_pi=this.Reg1_eq7_pi(p,t);
+		var v=pi*gamma_pi*(t+this.T0)*this.R/p;
+		return v;
+	}
+
+	Wasp97.prototype.Reg1_pt2u=function(p,t){//return :Specific internal energy,see to if97--table3
+		var Pstar=16.53; //p* 16.53Mpa
+		var Tstar=1386; //T* 1386K
+		var pi=p/Pstar;
+		var tau=Tstar/(t+this.T0);
+		var gamma_pi=this.Reg1_eq7_pi(p,t);
+		var gamma_tau=this.Reg1_eq7_tau(p,t);
+		var u=(tau*gamma_tau-pi*gamma_pi)*(t+this.T0)*this.R;
+		return u;
+	}
+
+	Wasp97.prototype.Reg1_pt2cp=function(p,t){//return :Specific isobaric heat capacity,see to if97--table3
+		var Tstar=1386; //T* 1386K
+		var tau=Tstar/(t+this.T0);
+		var gamma_tau2=this.Reg1_eq7_tau2(p,t);
+		var cp=-tau*tau*gamma_tau2*this.R;
+		return cp;
+	}
+
+	Wasp97.prototype.Reg1_pt2cv=function(p,t){//return :Specific isochoric heat capacity,see to if97--table3
+		var Pstar=16.53; //p* 16.53Mpa
+		var Tstar=1386; //T* 1386K
+		var pi=p/Pstar;
+		var tau=Tstar/(t+this.T0);
+		var gamma_pi=this.Reg1_eq7_pi(p,t);
+		var gamma_tau2=this.Reg1_eq7_tau2(p,t);
+		var gamma_pi2=this.Reg1_eq7_pi2(p,t);
+		var gamma_pitau=this.Reg1_eq7_pitau(p,t);
+		var cv=(-tau*tau*gamma_tau2+(gamma_pi-tau*gamma_pitau)*(gamma_pi-tau*gamma_pitau)/gamma_pi2)*this.R;
+		return cv;
+	}
+
+	Wasp97.prototype.Reg1_pt2w=function(p,t){//return :Speed of sound,see to if97--table3
+		var Pstar=16.53; //p* 16.53Mpa
+		var Tstar=1386; //T* 1386K
+		var pi=p/Pstar;
+		var tau=Tstar/(t+this.T0);
+		var gamma_pi=this.Reg1_eq7_pi(p,t);
+		var gamma_tau2=this.Reg1_eq7_tau2(p,t);
+		var gamma_pi2=this.Reg1_eq7_pi2(p,t);
+		var gamma_pitau=this.Reg1_eq7_pitau(p,t);
+		var w=(gamma_pi*gamma_pi)/(Math.pow(gamma_pi-tau*gamma_pitau,2)/(tau*tau*gamma_pi)-gamma_pi2);
+		w=w*(t+this.T0)*this.R;
+		w=Math.sqrt(w);
+		return w; //formula is error
+	}
+
+	Wasp97.prototype.Reg1_pt2av=function(p,t){//return :isobaric cubic expansion coefficient,see to if97--table3
+		var Tstar=1386; //T* 1386K
+		var tau=Tstar/(t+this.T0);
+		var gamma_pi=this.Reg1_eq7_pi(p,t);
+		var gamma_pitau=this.Reg1_eq7_pitau(p,t);
+		var av=(1-tau*gamma_pitau/gamma_pi)/(t+this.T0);		
+		return av;
+	}
+
+	Wasp97.prototype.Reg1_pt2kT=function(p,t){//return :isothermal compressibility,see to if97--table3
+		var Pstar=16.53; //p* 16.53Mpa
+		var pi=p/Pstar;
+		var gamma_pi=this.Reg1_eq7_pi(p,t);
+		var gamma_pi2=this.Reg1_eq7_pi2(p,t);
+		var kT=(-pi*gamma_pi2/gamma_pi)/p;		
+		return kT;
+	}
+
 }
 
 
 
+
 var ws=new Wasp97(100,111,'pg');
-var ws2=new Wasp97(200,111,'ph');
-ws.pt2h();
-ws2.pt2h();
-var kx=2.345E-1;
-console.log(ws.table25.ni[42]);
-console.log(ws2.table25.Ii[46]);
-console.log(ws2.table11.Ji[42]);
+p1=3;
+t1=300-273.15;
+p2=80;
+t2=300-273.15;
+p3=3;
+t3=500-273.15;
+console.log(ws.Reg1_pt2v(p1,t1)+"\t"+ws.Reg1_pt2v(p2,t2)+"\t"+ws.Reg1_pt2v(p3,t3));
+console.log(ws.Reg1_pt2h(p1,t1)+"\t"+ws.Reg1_pt2h(p2,t2)+"\t"+ws.Reg1_pt2h(p3,t3));
+console.log(ws.Reg1_pt2u(p1,t1)+"\t"+ws.Reg1_pt2u(p2,t2)+"\t"+ws.Reg1_pt2u(p3,t3));
+console.log(ws.Reg1_pt2s(p1,t1)+"\t"+ws.Reg1_pt2s(p2,t2)+"\t"+ws.Reg1_pt2s(p3,t3));
+console.log(ws.Reg1_pt2cp(p1,t1)+"\t"+ws.Reg1_pt2cp(p2,t2)+"\t"+ws.Reg1_pt2cp(p3,t3));
+console.log(ws.Reg1_pt2cv(p1,t1)+"\t"+ws.Reg1_pt2cv(p2,t2)+"\t"+ws.Reg1_pt2cv(p3,t3));
+console.log(ws.Reg1_pt2w(p1,t1)+"\t"+ws.Reg1_pt2w(p2,t2)+"\t"+ws.Reg1_pt2w(p3,t3));
+console.log(ws.Reg1_pt2av(p1,t1)+"\t"+ws.Reg1_pt2av(p2,t2)+"\t"+ws.Reg1_pt2av(p3,t3));
+console.log(ws.Reg1_pt2kT(p1,t1)+"\t"+ws.Reg1_pt2kT(p2,t2)+"\t"+ws.Reg1_pt2kT(p3,t3));
 
 
 
