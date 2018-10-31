@@ -29,6 +29,7 @@ public: //static function: P,S to
     static double PS2Cv(double p,double s);
     static double PS2W(double p,double s);
 public: //static function: P,V to 
+    static double PV2T(double p,double v,int&);
     static double PV2T(double p,double v);
     static double PV2H(double p,double v);
     static double PV2S(double p,double v);
@@ -36,6 +37,26 @@ public: //static function: P,V to
     static double PV2Cp(double p,double v);
     static double PV2Cv(double p,double v);
     static double PV2W(double p,double v);
+public: //static function: P,U to 
+    static double PU2T(double p,double u,int&);
+    static double PU2T(double p,double u);
+    static double PU2H(double p,double u);
+    static double PU2S(double p,double u);
+    static double PU2V(double p,double u);
+    static double PU2Cp(double p,double u);
+    static double PU2Cv(double p,double u);
+    static double PU2W(double p,double u);
+public: //static function: P,Cp to 
+        //由于过冷水相同压力下不同温度的Cp相差很小，PCp2T迭代出的t值很难还原回原来的t
+        //不建议采用P，Cp to求其他参数
+    static double PCp2T(double p,double cp,int&);
+    static double PCp2T(double p,double cp);
+    static double PCp2H(double p,double cp);
+    static double PCp2S(double p,double cp);
+    static double PCp2V(double p,double cp);
+    static double PCp2U(double p,double cp);
+    static double PCp2Cv(double p,double cp);
+    static double PCp2W(double p,double cp);
 private:
     const static double ERR;
     const static double ERR2;
