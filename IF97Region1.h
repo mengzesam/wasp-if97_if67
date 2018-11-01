@@ -13,6 +13,7 @@ public: //static function: P,T to
     static double PT2Cv(double p,double t);
     static double PT2W(double p,double t);
 public: //static function: P,H to 
+    static double PH2T(double p,double h,int& itera);
     static double PH2T(double p,double h);
     static double PH2S(double p,double h);
     static double PH2V(double p,double h);
@@ -21,6 +22,7 @@ public: //static function: P,H to
     static double PH2Cv(double p,double h);
     static double PH2W(double p,double h);
 public: //static function: P,S to 
+    static double PS2T(double p,double s,int& itera);
     static double PS2T(double p,double s);
     static double PS2H(double p,double s);
     static double PS2V(double p,double s);
@@ -57,7 +59,17 @@ public: //static function: P,Cp to
     static double PCp2U(double p,double cp);
     static double PCp2Cv(double p,double cp);
     static double PCp2W(double p,double cp);
+public: //static function: T,H to 
+    static double TH2P(double t,double h,int& itera);
+    static double TH2P(double t,double h);
+    static double TH2S(double t,double h);
+    static double TH2V(double t,double h);
+    static double TH2U(double t,double h);
+    static double TH2Cp(double t,double h);
+    static double TH2Cv(double t,double h);
+    static double TH2W(double t,double h);
 private:
+    const static double ERR0;
     const static double ERR;
     const static double ERR2;
     const static double T0;
@@ -77,6 +89,7 @@ private:
     const static double Ii_tab8[20];
     const static double Ji_tab8[20];
 };
+const double IF97Region1::ERR0=1E-5;
 const double IF97Region1::ERR=1E-7;
 const double IF97Region1::ERR2=1E-10;
 const double IF97Region1::T0=273.15;
