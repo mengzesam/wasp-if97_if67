@@ -71,6 +71,41 @@ double IF97Region1::PT2Cv(double p,double t){//TO check
 double IF97Region1::PT2W(double p,double t){//TODO
     return 100.0;
 }
+double IF97Region1::PH2T(double p,double h,int& itera){
+    double P_base=1; //p* 1Mpa
+    double T_base=1; //T* 1K
+    double H_base=2500; //h* 2500kJ/kg
+    double pi=p/P_base;
+    double eta=h/H_base;
+    double theta=0;
+    for(int i =0;i<20; i++) {
+        theta+=ni_tab6[i]*pow(pi,Ii_tab6[i])*pow(eta+1,Ji_tab6[i]);
+    }
+    double t=theta*T_base-T0;//先用backward方程计算t初值，再用弦截法求精确的t
+    double hh=PT2H(p,t);
+    itera=0;
+    if(abs(hh-h)>ERR0){
+        double t0=t;
+        double h0=hh;
+        t=t0-0.15;//需要判断是否超出region1区域
+        t=t<0?t0+0.15:t;
+        hh=PT2H(p,t);
+        double t1=t;
+        double h1=hh;
+        t=t1+(h-h1)/(h0-h1)*(t0-t1);
+        hh=PT2H(p,t);
+        while(abs(hh-h)>ERR0){
+            itera++;
+            t0=t1;
+            h0=h1;
+            t1=t;
+            h1=hh;
+            t=t1+(h-h1)/(h0-h1)*(t0-t1);
+            hh=PT2H(p,t);
+        }
+    }
+    return t;    
+}
 double IF97Region1::PH2T(double p,double h){
     double P_base=1; //p* 1Mpa
     double T_base=1; //T* 1K
@@ -83,18 +118,17 @@ double IF97Region1::PH2T(double p,double h){
     }
     double t=theta*T_base-T0;//先用backward方程计算t初值，再用弦截法求精确的t
     double hh=PT2H(p,t);
-    if(abs(hh-h)>ERR){
+    if(abs(hh-h)>ERR0){
         double t0=t;
         double h0=hh;
-        t=t0+0.2;//需要判断是否超出region1区域
+        t=t0-0.15;//需要判断是否超出region1区域
+        t=t<0?t0+0.15:t;
         hh=PT2H(p,t);
         double t1=t;
         double h1=hh;
         t=t1+(h-h1)/(h0-h1)*(t0-t1);
         hh=PT2H(p,t);
-        int i=0;
-        while(abs(hh-h)>ERR){
-            i++;
+        while(abs(hh-h)>ERR0){
             t0=t1;
             h0=h1;
             t1=t;
@@ -102,7 +136,6 @@ double IF97Region1::PH2T(double p,double h){
             t=t1+(h-h1)/(h0-h1)*(t0-t1);
             hh=PT2H(p,t);
         }
-        cout<<i<<endl;
     }
     return t;    
 }
@@ -130,7 +163,42 @@ double IF97Region1::PH2W(double p,double h){
     double t=PH2T(p,h);
     return PT2W(p,t);
 }
-double IF97Region1::PS2T(double p,double s){
+double IF97Region1::PS2T(double p,double s,int& itera){
+    double P_base=1; //p* 1Mpa
+    double T_base=1; //T* 1K
+    double S_base=1; //S* 1kJ/kg.K	
+    double pi=p/P_base;
+    double sigma=s/S_base;
+    double theta=0;
+    for(int i =0;i<20; i++) {
+        theta+=ni_tab8[i]*pow(pi,Ii_tab8[i])*pow(sigma+2,Ji_tab8[i]);
+    }
+    double t=theta*T_base-T0;//先用backward方程计算t初值，再用弦截法求精确的t
+    double ss=PT2S(p,t);
+    itera=0;
+    if(abs(ss-s)>ERR){
+        double t0=t;
+        double s0=ss;
+        t=t0-0.15;//需要判断是否超出region1区域
+        t=t<0?t0+0.15:t;
+        ss=PT2S(p,t);
+        double t1=t;
+        double s1=ss;
+        t=t1+(s-s1)/(s0-s1)*(t0-t1);
+        ss=PT2S(p,t);
+        while(abs(ss-s)>ERR){
+            itera++;
+            t0=t1;
+            s0=s1;
+            t1=t;
+            s1=ss;
+            t=t1+(s-s1)/(s0-s1)*(t0-t1);
+            ss=PT2S(p,t);
+        }
+    }
+    return t;    
+}
+double IF97Region1::PS2T(double p,double s){    
     double P_base=1; //p* 1Mpa
     double T_base=1; //T* 1K
     double S_base=1; //S* 1kJ/kg.K	
@@ -145,15 +213,14 @@ double IF97Region1::PS2T(double p,double s){
     if(abs(ss-s)>ERR){
         double t0=t;
         double s0=ss;
-        t=t0+0.2;//需要判断是否超出region1区域
+        t=t0-0.15;//需要判断是否超出region1区域
+        t=t<0?t0+0.15:t;
         ss=PT2S(p,t);
         double t1=t;
         double s1=ss;
         t=t1+(s-s1)/(s0-s1)*(t0-t1);
         ss=PT2S(p,t);
-        //int i=0;
         while(abs(ss-s)>ERR){
-        //    i++;
             t0=t1;
             s0=s1;
             t1=t;
@@ -161,9 +228,8 @@ double IF97Region1::PS2T(double p,double s){
             t=t1+(s-s1)/(s0-s1)*(t0-t1);
             ss=PT2S(p,t);
         }
-        //cout<<i<<endl;
     }
-    return t;    
+    return t;
 }
 double IF97Region1::PS2H(double p,double s){
     double t=PS2T(p,s);
@@ -223,9 +289,8 @@ double IF97Region1::PV2T(double p,double v,int& itera){
         for(int i=0;i<34;i++)
             gamma_pi+=lefts[i]*pow(tau-1.222,Ji[i]);
         vv=pi*gamma_pi*(t+T0)*R/(p*1000);
-        int i=0;
         while(abs(vv-v)>ERR2){
-            i++;
+            itera++;
             t0=t1;
             v0=v1;
             t1=t;
@@ -236,9 +301,7 @@ double IF97Region1::PV2T(double p,double v,int& itera){
             for(int i=0;i<34;i++)
                 gamma_pi+=lefts[i]*pow(tau-1.222,Ji[i]);
             vv=pi*gamma_pi*(t+T0)*R/(p*1000);
-        }
-        //cout<<i<<endl;
-        itera=i;  
+        } 
     }
     return t;
 }
@@ -359,9 +422,8 @@ double IF97Region1::PU2T(double p,double u,int& itera){
         for(int i=0;i<34;i++)
             gamma_pi+=lefts_pi[i]*pow(tau-1.222,Ji[i]);
         uu=(tau*gamma_tau-pi*gamma_pi)*(t+T0)*R;
-        int i=0;
         while(abs(uu-u)>ERR){
-            i++;
+            itera++;
             t0=t1;
             u0=u1;
             t1=t;
@@ -376,8 +438,6 @@ double IF97Region1::PU2T(double p,double u,int& itera){
                 gamma_pi+=lefts_pi[i]*pow(tau-1.222,Ji[i]);
             uu=(tau*gamma_tau-pi*gamma_pi)*(t+T0)*R;
         }
-        //cout<<i<<endl;
-        itera=i;  
     }
     return t;
 }
@@ -518,24 +578,162 @@ double IF97Region1::PCp2T(double p,double cp,int& itera){
     }
     return t;   
 }
+double IF97Region1::TH2P(double t,double h,int& itera){
+    double tau=T_base/(t+T0);
+    double lefts[34];
+    for(int i = 0;i<34; i++)
+        lefts[i]=ni[i]*Ji[i]*pow(tau-1.222,Ji[i]-1);
+    double p0=IF97Region4::T2P(t);
+    double p1=100;
+    double h0,h1;
+    double pi=(p0+0.1)/p_base;   
+    double gamma_tau=0;
+    for(int i = 0;i<34; i++)
+        gamma_tau+=lefts[i]*pow(7.1-pi,Ii[i]);
+    h0=tau*gamma_tau*(t+T0)*R;
+    double p=(p0+p1)/2;
+    pi=p/p_base;        
+    gamma_tau=0;
+    for(int i = 0;i<34; i++)
+        gamma_tau+=lefts[i]*pow(7.1-pi,Ii[i]);
+    double hh=tau*gamma_tau*(t+T0)*R;
+    itera=0;
+    if(hh>h0){//递增
+        double pp0;
+        while(itera<4 && abs(hh-h)>ERR){
+            itera++;
+            pp0=p;
+            h0=hh;
+            if(h<hh)
+                p1=p;
+            else
+                p0=p;
+            p=(p0+p1)/2;
+            pi=p/p_base;        
+            gamma_tau=0;
+            for(int i = 0;i<34; i++)
+                gamma_tau+=lefts[i]*pow(7.1-pi,Ii[i]);
+            hh=tau*gamma_tau*(t+T0)*R;
+        }
+        p0=pp0;
+    }else{//递减
+        double pp0;
+        while(itera<4 && abs(hh-h)>ERR){
+            pp0=p;
+            h0=hh;
+            if(h<hh)
+                p0=p;
+            else
+                p1=p;
+            p=(p0+p1)/2;
+            pi=p/p_base;        
+            gamma_tau=0;
+            for(int i = 0;i<34; i++)
+                gamma_tau+=lefts[i]*pow(7.1-pi,Ii[i]);
+            hh=tau*gamma_tau*(t+T0)*R;
+        }
+        p0=pp0;        
+    }
+    if(abs(hh-h)>ERR){
+        itera++;
+        p1=p;
+        h1=hh;
+        p=p1+(h-h1)/(h0-h1)*(p0-p1);
+        pi=p/p_base; 
+        gamma_tau=0;
+        for(int i = 0;i<34; i++)
+            gamma_tau+=lefts[i]*pow(7.1-pi,Ii[i]);
+        hh=tau*gamma_tau*(t+T0)*R;
+        while(abs(hh-h)>ERR){
+            itera++;
+            p0=p1;
+            h0=h1;
+            p1=p;
+            h1=hh;
+            p=p1+(h-h1)/(h0-h1)*(p0-p1);
+            pi=p/p_base; 
+            gamma_tau=0;
+            for(int i = 0;i<34; i++)
+                gamma_tau+=lefts[i]*pow(7.1-pi,Ii[i]);
+            hh=tau*gamma_tau*(t+T0)*R;
+        } 
+    }
+    return p;     
+}
 
 int main(){
+    double t,p,h0,h1,h2;
+    t=1;
+    for(;t<350.01;t+=0.1){
+        double dp=0.01;
+        p=IF97Region4::T2P(t);
+        h0=IF97Region1::PT2H(p,t);
+        p+=dp;
+        h1=IF97Region1::PT2H(p,t);
+        p+=dp;
+        h2=IF97Region1::PT2H(p,t);
+        //if(t>247.6)
+        //    double a=a+1;
+        while(p<100+dp/2 && ((h0<h1 && h1<h2) || (h0>h1 && h1>h2))){
+            h0=h1;
+            h1=h2;
+            p+=dp;
+            h2=IF97Region1::PT2H(p,t);
+        }
+        p=(p-dp)>100.0?100:(p-dp);
+        cout<<setprecision(10)<<t<<'\t'<<p<<'\t'<<endl;
+    }
+    return 0;
+}
+
+/* int main(){
+    double p,t,h,s,tt,pp;
+    int i=0;
+    p=11.50283947;
+    t=270;
+    h=IF97Region1::PT2H(p,t);
+    pp=IF97Region1::TH2P(t,h,i);
+    cout<<setprecision(10)<<i<<'\t'<<h<<"\t"<<pp<<"\t"<<p<<"\t"<<endl;
+    for(t=5;t<=350;t+=1){
+        p=IF97Region4::T2P(t);
+        for(;p<=100;p+=1){
+            h=IF97Region1::PT2H(p,t);
+            pp=IF97Region1::TH2P(t,h,i);
+            cout<<setprecision(10)<<i<<'\t'<<h<<"\t"<<p<<"\t"<<t<<"\t"<<100.0*(pp-p)/p<<endl;
+        }
+    }
+ 
+     for(t=5;t<350.1;t+=5){
+        p=IF97Region4::T2P(t)+0.00001;
+        double dp=(100-p)/25;
+        while(p<100.1){
+            h=IF97Region1::PT2H(p,t);
+            cout<<setprecision(10)<<t*t<<"\t"<<h*h<<"\t"<<t*h<<"\t"
+                <<t<<"\t"<<h<<"\t"<<1<<"\t"<<p<<endl;
+            p+=dp;            
+        }
+    } 
+    return 0;
+}
+*/
+
+/*int main(){
     double p,t,h,s,cp;
     int i=0;
     p=3;
     t=300-273.15;
-    cp=IF97Region1::PT2Cp(p,t);
-    double tt=IF97Region1::PCp2T(p,cp,i);
-    cout<<setprecision(10)<<i<<'\t'<<cp<<"\t"<<p<<"\t"<<tt<<"\t"<<100.0*(t-tt)/t<<endl;
-/*     for(t=5;t<=350;t+=1){
+    s=IF97Region1::PT2S(p,t);
+    h=IF97Region1::PS2H(p,s);
+    cout<<setprecision(10)<<t<<'\t'<<s<<"\t"<<p<<"\t"<<h<<"\t"<<endl;
+     for(t=5;t<=350;t+=1){
         p=IF97Region4::T2P(t);
         for(;p<=100;p+=1){
-            cp=IF97Region1::PT2Cp(p,t);
-            double tt=IF97Region1::PCp2T(p,cp,i);
-            cout<<setprecision(10)<<i<<"\t"<<p<<"\t"<<t<<"\t"<<100.0*(t-tt)/t<<endl;
+            s=IF97Region1::PT2S(p,t);
+            double tt=IF97Region1::PS2T(p,s,i);
+            //cout<<setprecision(10)<<i<<"\t"<<tt<<"\t"<<t<<"\t"<<100.0*(t-tt)/t<<endl;
         }
-    } */
-/*     for(t=5;t<350.1;t+=5){
+    } 
+    for(t=5;t<350.1;t+=5){
         p=IF97Region4::T2P(t)+0.00001;
         double dp=(100-p)/25;
         while(p<100.1){
@@ -544,9 +742,39 @@ int main(){
                 <<p<<"\t"<<cp<<"\t"<<1<<"\t"<<t<<endl;
             
         }
-    } */
-    return 0;
+    }
+    return 0; 
 }
+*/
+/* 
+int main(){
+    double p,t,h,s,cp;
+    int i=0;
+    p=3;
+    t=300-273.15;
+    cp=IF97Region1::PT2Cp(p,t);
+    double tt=IF97Region1::PCp2T(p,cp,i);
+    cout<<setprecision(10)<<i<<'\t'<<cp<<"\t"<<p<<"\t"<<tt<<"\t"<<100.0*(t-tt)/t<<endl;
+    for(t=5;t<=350;t+=1){
+        p=IF97Region4::T2P(t);
+        for(;p<=100;p+=1){
+            cp=IF97Region1::PT2Cp(p,t);
+            double tt=IF97Region1::PCp2T(p,cp,i);
+            cout<<setprecision(10)<<i<<"\t"<<p<<"\t"<<t<<"\t"<<100.0*(t-tt)/t<<endl;
+        }
+    }
+    for(t=5;t<350.1;t+=5){
+        p=IF97Region4::T2P(t)+0.00001;
+        double dp=(100-p)/25;
+        while(p<100.1){
+            cp=IF97Region1::PT2Cp(p,t);
+            cout<<setprecision(10)<<p*p<<"\t"<<cp*cp<<"\t"<<p*cp<<"\t"
+                <<p<<"\t"<<cp<<"\t"<<1<<"\t"<<t<<endl;
+            
+        }
+    }
+    return 0;
+} */
     
 /* int main(){
     double p,t,h,s,u;
