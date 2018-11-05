@@ -3,6 +3,8 @@
 #include <iostream>
 #include <iomanip>
 #include <math.h>
+#include <stdlib.h>
+#include <time.h>
 using namespace std;
 
 double IF97Region1::PT2H(double p,double t){
@@ -583,68 +585,76 @@ double IF97Region1::TH2P(double t,double h,int& itera){
     double lefts[34];
     for(int i = 0;i<34; i++)
         lefts[i]=ni[i]*Ji[i]*pow(tau-1.222,Ji[i]-1);
-    double p0=IF97Region4::T2P(t);
-    double p1=100;
-    double h0,h1;
-    double pi=(p0+0.1)/p_base;   
+    double p=10;
+    double ps=IF97Region4::T2P(t);
+    /*.利用拟合的粗略公式设置初值p*/
+    if(t>=0 && t<=50){
+        p=-0.00350725380*t*t+0.00045569756*h*h-0.00111040654*t*h
+          -4.20897316924*t+1.01047891593*h-0.53520899497;
+    }else if(t>50 && t<=100){
+        p=-0.00934337710*t*t+0.00010799878*h*h+0.00172808463*t*h
+          -4.31944050685*t+1.03981042874*h-1.27932307958;
+    }else if(t>100 && t<=150){
+        p=-0.02520474643*t*t-0.00049669320*h*h+0.00792833912*t*h
+          -3.96834023880*t+0.96961365926*h-2.49893115932;
+    }else if(t>150 && t<=200){
+        p=-0.07911965905*t*t-0.00252768411*h*h+0.02897189024*t*h
+          -1.74587371197*t+0.50532322819*h-14.31227705245;
+    }else if(t>200 && t<=247.5711){
+        p=-0.38598851231*t*t-0.01455590938*h*h+0.15088800230*t*h
+          +14.29549174131*t-2.82596587386*h-156.75413188310;
+    }else if(t>=339.8638 && t<=350){
+        p=0.29425198222*t*t+0.01287859709*h*h-0.12402004215*t*h
+         -3.77056248947*t+1.45474007160*h-544.02491393411;
+    }
+    if(p<ps) p=ps;
+    else if(p>100) p=100;
+    double pi=(p+0.1)/p_base;   
     double gamma_tau=0;
     for(int i = 0;i<34; i++)
         gamma_tau+=lefts[i]*pow(7.1-pi,Ii[i]);
-    h0=tau*gamma_tau*(t+T0)*R;
-    double p=(p0+p1)/2;
-    pi=p/p_base;        
-    gamma_tau=0;
-    for(int i = 0;i<34; i++)
-        gamma_tau+=lefts[i]*pow(7.1-pi,Ii[i]);
     double hh=tau*gamma_tau*(t+T0)*R;
-    itera=0;
-    if(hh>h0){//递增
-        double pp0;
-        while(itera<4 && abs(hh-h)>ERR){
-            itera++;
-            pp0=p;
-            h0=hh;
-            if(h<hh)
-                p1=p;
-            else
-                p0=p;
-            p=(p0+p1)/2;
-            pi=p/p_base;        
-            gamma_tau=0;
-            for(int i = 0;i<34; i++)
-                gamma_tau+=lefts[i]*pow(7.1-pi,Ii[i]);
-            hh=tau*gamma_tau*(t+T0)*R;
-        }
-        p0=pp0;
-    }else{//递减
-        double pp0;
-        while(itera<4 && abs(hh-h)>ERR){
-            pp0=p;
-            h0=hh;
-            if(h<hh)
-                p0=p;
-            else
-                p1=p;
-            p=(p0+p1)/2;
-            pi=p/p_base;        
-            gamma_tau=0;
-            for(int i = 0;i<34; i++)
-                gamma_tau+=lefts[i]*pow(7.1-pi,Ii[i]);
-            hh=tau*gamma_tau*(t+T0)*R;
-        }
-        p0=pp0;        
-    }
+    itera=0;           
     if(abs(hh-h)>ERR){
-        itera++;
-        p1=p;
-        h1=hh;
+        double p0=p;
+        double h0=hh;
+/*         if(t>=0 && t<=50){
+            p=-0.00350725380*t*t+0.00045569756*h0*h0-0.00111040654*t*h0
+            -4.20897316924*t+1.01047891593*h0-0.53520899497;
+        }else if(t>50 && t<=100){
+            p=-0.00934337710*t*t+0.00010799878*h0*h0+0.00172808463*t*h0
+            -4.31944050685*t+1.03981042874*h0-1.27932307958;
+        }else if(t>100 && t<=150){
+            p=-0.02520474643*t*t-0.00049669320*h0*h0+0.00792833912*t*h0
+            -3.96834023880*t+0.96961365926*h0-2.49893115932;
+        }else if(t>150 && t<=200){
+            p=-0.07911965905*t*t-0.00252768411*h0*h0+0.02897189024*t*h0
+            -1.74587371197*t+0.50532322819*h0-14.31227705245;
+        }else if(t>200 && t<=247.5711){
+            p=-0.38598851231*t*t-0.01455590938*h0*h0+0.15088800230*t*h0
+            +14.29549174131*t-2.82596587386*h0-156.75413188310;
+        }else if(t>=339.8638 && t<=350){
+            p=0.29425198222*t*t+0.01287859709*h0*h0-0.12402004215*t*h0
+            -3.77056248947*t+1.45474007160*h0-544.02491393411;
+        }
+        if(abs(p-p0)<ERR0) p=p0+3;
+        else if(p>100) p=100; */
+        p=ps;
+        if(abs(p-p0)<ERR0) p=p0+1;
+        pi=p/p_base; 
+        gamma_tau=0;
+        for(int i = 0;i<34; i++)
+            gamma_tau+=lefts[i]*pow(7.1-pi,Ii[i]);
+        hh=tau*gamma_tau*(t+T0)*R;
+        double p1=p;
+        double h1=hh;
         p=p1+(h-h1)/(h0-h1)*(p0-p1);
         pi=p/p_base; 
         gamma_tau=0;
         for(int i = 0;i<34; i++)
             gamma_tau+=lefts[i]*pow(7.1-pi,Ii[i]);
         hh=tau*gamma_tau*(t+T0)*R;
-        while(abs(hh-h)>ERR){
+        while(abs(hh-h)>ERR0){
             itera++;
             p0=p1;
             h0=h1;
@@ -660,52 +670,76 @@ double IF97Region1::TH2P(double t,double h,int& itera){
     }
     return p;     
 }
-
-int main(){
-    double t,p,h0,h1,h2;
-    t=1;
-    for(;t<350.01;t+=0.1){
-        double dp=0.01;
-        p=IF97Region4::T2P(t);
-        h0=IF97Region1::PT2H(p,t);
-        p+=dp;
-        h1=IF97Region1::PT2H(p,t);
-        p+=dp;
-        h2=IF97Region1::PT2H(p,t);
-        //if(t>247.6)
-        //    double a=a+1;
-        while(p<100+dp/2 && ((h0<h1 && h1<h2) || (h0>h1 && h1>h2))){
-            h0=h1;
-            h1=h2;
-            p+=dp;
-            h2=IF97Region1::PT2H(p,t);
+/*获取从247.5712-339.8637度过冷水等温线焓值最小时的p
+int count=0;
+double PatMinH(double t,double left,double right,double left_h,double right_h){
+    count++;
+    if(right-left<=0.0000005){//求出的p误差范围是+-2*dp
+        double dp=(right-left);
+        double h0=IF97Region1::PT2H(left-dp,t);
+        double h1=left_h;
+        double h2=right_h;
+        double h3=IF97Region1::PT2H(right+dp,t);
+        if((h0>h1 || h0>h2) && (h3>h2 || h3>h1)){
+            return (right+left)/2.0;
         }
-        p=(p-dp)>100.0?100:(p-dp);
-        cout<<setprecision(10)<<t<<'\t'<<p<<'\t'<<endl;
+        return -1;
     }
+    double h=IF97Region1::PT2H((left+right)/2.0,t);
+    if(left_h<h && h<right_h)
+        return PatMinH(t,left,(left+right)/2.0,left_h,h);
+    else if(left_h>h && h>right_h)
+        return PatMinH(t,(left+right)/2.0,right,h,right_h);
+    else{//h<left_h && h<right_h
+        srand((int)time(0));
+        int select=rand()%2;
+        if(select==0){
+            double p=PatMinH(t,left,(left+right)/2.0,left_h,h);
+            if(p>0)
+                return p;
+            return PatMinH(t,(left+right)/2.0,right,h,right_h);
+        }else{            
+            double p=PatMinH(t,(left+right)/2.0,right,h,right_h);
+            if(p>0)
+                return p;
+            return PatMinH(t,left,(left+right)/2.0,left_h,h);
+        }
+    }
+}
+void inflectionPs(){
+    for(double t=339.8;t<339.9;t+=0.0001){
+        count=0;
+        double ps=IF97Region4::T2P(t);        
+        double p=PatMinH(t,ps,100,IF97Region1::PT2H(ps,t),IF97Region1::PT2H(100,t));
+        cout<<setprecision(10)<<t<<'\t'<<p<<'\t'<<count<<'\t';
+        cout<<setprecision(13)<<IF97Region1::PT2H(p-0.000001,t)<<'\t';
+        cout<<setprecision(13)<<IF97Region1::PT2H(p,t)<<'\t';
+        cout<<setprecision(13)<<IF97Region1::PT2H(p+0.000001,t)<<endl;
+    }
+}
+int main(){
+    inflectionPs();
     return 0;
 }
+end 获取从247.6-339.9度过冷水等温线焓值最小时的p*/
 
-/* int main(){
+void verify(){
     double p,t,h,s,tt,pp;
-    int i=0;
-    p=11.50283947;
-    t=270;
-    h=IF97Region1::PT2H(p,t);
-    pp=IF97Region1::TH2P(t,h,i);
-    cout<<setprecision(10)<<i<<'\t'<<h<<"\t"<<pp<<"\t"<<p<<"\t"<<endl;
-    for(t=5;t<=350;t+=1){
-        p=IF97Region4::T2P(t);
-        for(;p<=100;p+=1){
+    int i;
+    for(t=1;t<=247.5;t+=0.5){
+        p=IF97Region4::T2P(t)+0.000000;
+        for(;p<=100;p+=0.5){
             h=IF97Region1::PT2H(p,t);
             pp=IF97Region1::TH2P(t,h,i);
-            cout<<setprecision(10)<<i<<'\t'<<h<<"\t"<<p<<"\t"<<t<<"\t"<<100.0*(pp-p)/p<<endl;
+            cout<<setprecision(10)<<i<<'\t'<<h<<"\t"<<p<<"\t"<<pp<<"\t"<<t<<"\t"<<abs(100.0*(pp-p)/p)<<endl;
         }
-    }
- 
-     for(t=5;t<350.1;t+=5){
+    } 
+}
+void createFitdata(){
+    double p,t,h,s,tt,pp;
+    for(t=200;t<=247.5;t+=2.5){
         p=IF97Region4::T2P(t)+0.00001;
-        double dp=(100-p)/25;
+        double dp=(100-p)/60;
         while(p<100.1){
             h=IF97Region1::PT2H(p,t);
             cout<<setprecision(10)<<t*t<<"\t"<<h*h<<"\t"<<t*h<<"\t"
@@ -713,9 +747,12 @@ int main(){
             p+=dp;            
         }
     } 
-    return 0;
 }
-*/
+int main(){ 
+    verify();
+    //createFitdata();
+    return 0;
+} 
 
 /*int main(){
     double p,t,h,s,cp;
