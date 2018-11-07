@@ -60,14 +60,50 @@ public: //static function: P,Cp to
     static double PCp2Cv(double p,double cp);
     static double PCp2W(double p,double cp);
 public: //static function: T,H to 
-    static double TH2P(double t,double h,int& itera);
-    static double TH2P(double t,double h);
+    static double TH2P(double t,double h,double& p2, int& itera);
+    static double TH2P(double t,double h,double& p2);
     static double TH2S(double t,double h);
     static double TH2V(double t,double h);
     static double TH2U(double t,double h);
     static double TH2Cp(double t,double h);
     static double TH2Cv(double t,double h);
     static double TH2W(double t,double h);
+public: //static function: T,S to 
+    static double TS2P(double t,double s,double& p2,int& itera);
+    static double TS2P(double t,double s,double& p2);
+    static double TS2H(double t,double s);
+    static double TS2V(double t,double s);
+    static double TS2U(double t,double s);
+    static double TS2Cp(double t,double s);
+    static double TS2Cv(double t,double s);
+    static double TS2W(double t,double s);
+public: //static function: T,V to 
+    static double TV2P(double t,double v,int& itera);
+    static double TV2P(double t,double v);
+    static double TV2H(double t,double v);
+    static double TV2S(double t,double v);
+    static double TV2U(double t,double v);
+    static double TV2Cp(double t,double v);
+    static double TV2Cv(double t,double v);
+    static double TV2W(double t,double v);
+public: //static function: T,U to 
+    static double TU2P(double t,double u,int& itera);
+    static double TU2P(double t,double u);
+    static double TU2H(double t,double u);
+    static double TU2S(double t,double u);
+    static double TU2V(double t,double u);
+    static double TU2Cp(double t,double u);
+    static double TU2Cv(double t,double u);
+    static double TU2W(double t,double u);
+public: //static function: T,Cp to 
+    static double TCp2P(double t,double Cp,int& itera);
+    static double TCp2P(double t,double Cp);
+    static double TCp2H(double t,double Cp);
+    static double TCp2S(double t,double Cp);
+    static double TCp2V(double t,double Cp);
+    static double TCp2U(double t,double Cp);
+    static double TCp2Cv(double t,double Cp);
+    static double TCp2W(double t,double Cp);
 private:
     const static double ERR0;
     const static double ERR;
