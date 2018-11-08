@@ -19,11 +19,11 @@ double IF97Region1::PT2S(double p,double t){
     double pi=p/p_base;
     double tau=T_base/(t+T0);
     double gamma_tau=0;
-    for(int i = 0;i<34; i++)
-        gamma_tau+=ni[i]*pow(7.1-pi,Ii[i])*Ji[i]*pow(tau-1.222,Ji[i]-1);
     double gamma=0;
-    for(int i=0;i<34;i++)
+    for(int i = 0;i<34; i++){
+        gamma_tau+=ni[i]*pow(7.1-pi,Ii[i])*Ji[i]*pow(tau-1.222,Ji[i]-1);
 		gamma+=ni[i]*pow(7.1-pi,Ii[i])*pow(tau-1.222,Ji[i]);
+    }
     return (tau*gamma_tau-gamma)*R;
 }
 double IF97Region1::PT2V(double p,double t){
@@ -580,67 +580,78 @@ double IF97Region1::PCp2T(double p,double cp,int& itera){
     }
     return t;   
 }
-double IF97Region1::TH2P(double t,double h,int& itera){
+double IF97Region1::TH2P(double t,double h,double& p2 ,int& itera){
+//TODO:p2:247.5712-339.8637度区间，h-p图的等温线不是单调，是向下凹的类抛物线，
+  //某些焓值对应两个压力，p2返回另外一个压力（如有）,否则返回-1
+    double err=ERR;
     double tau=T_base/(t+T0);
     double lefts[34];
     for(int i = 0;i<34; i++)
         lefts[i]=ni[i]*Ji[i]*pow(tau-1.222,Ji[i]-1);
-    double p=10;
+    double p;
     double ps=IF97Region4::T2P(t);
     /*.利用拟合的粗略公式设置初值p*/
     if(t>=0 && t<=50){
         p=-0.00350725380*t*t+0.00045569756*h*h-0.00111040654*t*h
           -4.20897316924*t+1.01047891593*h-0.53520899497;
-    }else if(t>50 && t<=100){
+    }else if(t<=100){
         p=-0.00934337710*t*t+0.00010799878*h*h+0.00172808463*t*h
           -4.31944050685*t+1.03981042874*h-1.27932307958;
-    }else if(t>100 && t<=150){
+    }else if(t<=150){
         p=-0.02520474643*t*t-0.00049669320*h*h+0.00792833912*t*h
           -3.96834023880*t+0.96961365926*h-2.49893115932;
-    }else if(t>150 && t<=200){
+    }else if(t<=200){
         p=-0.07911965905*t*t-0.00252768411*h*h+0.02897189024*t*h
           -1.74587371197*t+0.50532322819*h-14.31227705245;
-    }else if(t>200 && t<=247.5711){
+    }else if(t<=247.5711){
         p=-0.38598851231*t*t-0.01455590938*h*h+0.15088800230*t*h
           +14.29549174131*t-2.82596587386*h-156.75413188310;
-    }else if(t>=339.8638 && t<=350){
+    }else if(t<285.3041857){
+        p=-2.1138006643*t*t-0.0929427611*h*h+0.8879602002*t*h
+          +67.8651289239*t-14.7530585610*h-281.5752183792;
+        double t_300=t/300;
+        double p_fle=-7405.88491821*pow(t_300,6)+42720.33203809*pow(t_300,5)
+              -102340.68781725*pow(t_300,4)+130341.47388109*pow(t_300,3)
+              -93159.58960906*pow(t_300,2)+35800.45288382*t_300-5896.15285931;
+        if(p<p_fle+0.001) p=p_fle+0.001;
+    }else if(t<312.5){
+        p=2.01660953383*t*t+0.08927982598*h*h-0.85041712566*t*h
+          -65.07277755083*t+14.88446578182*h-351.12428675255;
+        double t_300=t/300;
+        double p_fle=-7405.88491821*pow(t_300,6)+42720.33203809*pow(t_300,5)
+              -102340.68781725*pow(t_300,4)+130341.47388109*pow(t_300,3)
+              -93159.58960906*pow(t_300,2)+35800.45288382*t_300-5896.15285931;
+        if(p>p_fle-0.001) p=p_fle-0.001;
+    }else if(t>=312.5 && t<339.8638){
+        p=0.5949935025*t*t+0.0256339561*h*h-0.2484843299*t*h
+          -16.6045383455*t+4.4809006333*h-695.9067672212;
+        double t_300=t/300;
+        double p_fle=-7405.88491821*pow(t_300,6)+42720.33203809*pow(t_300,5)
+              -102340.68781725*pow(t_300,4)+130341.47388109*pow(t_300,3)
+              -93159.58960906*pow(t_300,2)+35800.45288382*t_300-5896.15285931;
+        if(p>p_fle-0.001) p=p_fle-0.001;
+    }else if(t<=350){
         p=0.29425198222*t*t+0.01287859709*h*h-0.12402004215*t*h
          -3.77056248947*t+1.45474007160*h-544.02491393411;
     }
     if(p<ps) p=ps;
     else if(p>100) p=100;
-    double pi=(p+0.1)/p_base;   
+    double pi=p/p_base;   
     double gamma_tau=0;
     for(int i = 0;i<34; i++)
         gamma_tau+=lefts[i]*pow(7.1-pi,Ii[i]);
     double hh=tau*gamma_tau*(t+T0)*R;
     itera=0;           
-    if(abs(hh-h)>ERR){
+    if(abs(hh-h)>err){
         double p0=p;
         double h0=hh;
-/*         if(t>=0 && t<=50){
-            p=-0.00350725380*t*t+0.00045569756*h0*h0-0.00111040654*t*h0
-            -4.20897316924*t+1.01047891593*h0-0.53520899497;
-        }else if(t>50 && t<=100){
-            p=-0.00934337710*t*t+0.00010799878*h0*h0+0.00172808463*t*h0
-            -4.31944050685*t+1.03981042874*h0-1.27932307958;
-        }else if(t>100 && t<=150){
-            p=-0.02520474643*t*t-0.00049669320*h0*h0+0.00792833912*t*h0
-            -3.96834023880*t+0.96961365926*h0-2.49893115932;
-        }else if(t>150 && t<=200){
-            p=-0.07911965905*t*t-0.00252768411*h0*h0+0.02897189024*t*h0
-            -1.74587371197*t+0.50532322819*h0-14.31227705245;
-        }else if(t>200 && t<=247.5711){
-            p=-0.38598851231*t*t-0.01455590938*h0*h0+0.15088800230*t*h0
-            +14.29549174131*t-2.82596587386*h0-156.75413188310;
-        }else if(t>=339.8638 && t<=350){
-            p=0.29425198222*t*t+0.01287859709*h0*h0-0.12402004215*t*h0
-            -3.77056248947*t+1.45474007160*h0-544.02491393411;
+        if(t>247.5711 && t<285.3041857){
+            p=100;
+            if(abs(p-p0)<0.2) p=p0-1;
+        }else{
+            p=ps;
+            if(abs(p-p0)<0.2) p=p0+1;        
         }
-        if(abs(p-p0)<ERR0) p=p0+3;
-        else if(p>100) p=100; */
-        p=ps;
-        if(abs(p-p0)<ERR0) p=p0+1;
         pi=p/p_base; 
         gamma_tau=0;
         for(int i = 0;i<34; i++)
@@ -654,7 +665,7 @@ double IF97Region1::TH2P(double t,double h,int& itera){
         for(int i = 0;i<34; i++)
             gamma_tau+=lefts[i]*pow(7.1-pi,Ii[i]);
         hh=tau*gamma_tau*(t+T0)*R;
-        while(abs(hh-h)>ERR0){
+        while(abs(hh-h)>err){
             itera++;
             p0=p1;
             h0=h1;
@@ -668,8 +679,543 @@ double IF97Region1::TH2P(double t,double h,int& itera){
             hh=tau*gamma_tau*(t+T0)*R;
         } 
     }
+    p2=-1;
     return p;     
 }
+double IF97Region1::TH2P(double t,double h,double& p2){
+//TODO:p2:247.5712-339.8637度区间，h-p图的等温线是凹线，某些焓值对应两个压力，
+    //p2返回另外一个压力（如有）,否则返回-1
+    double err=ERR;
+    double tau=T_base/(t+T0);
+    double lefts[34];
+    for(int i = 0;i<34; i++)
+        lefts[i]=ni[i]*Ji[i]*pow(tau-1.222,Ji[i]-1);
+    double p;
+    double ps=IF97Region4::T2P(t);
+    /*.利用拟合的粗略公式设置初值p*/
+    if(t>=0 && t<=50){
+        p=-0.00350725380*t*t+0.00045569756*h*h-0.00111040654*t*h
+          -4.20897316924*t+1.01047891593*h-0.53520899497;
+    }else if(t<=100){
+        p=-0.00934337710*t*t+0.00010799878*h*h+0.00172808463*t*h
+          -4.31944050685*t+1.03981042874*h-1.27932307958;
+    }else if(t<=150){
+        p=-0.02520474643*t*t-0.00049669320*h*h+0.00792833912*t*h
+          -3.96834023880*t+0.96961365926*h-2.49893115932;
+    }else if(t<=200){
+        p=-0.07911965905*t*t-0.00252768411*h*h+0.02897189024*t*h
+          -1.74587371197*t+0.50532322819*h-14.31227705245;
+    }else if(t<=247.5711){
+        p=-0.38598851231*t*t-0.01455590938*h*h+0.15088800230*t*h
+          +14.29549174131*t-2.82596587386*h-156.75413188310;
+    }else if(t<285.3041857){
+        p=-2.1138006643*t*t-0.0929427611*h*h+0.8879602002*t*h
+          +67.8651289239*t-14.7530585610*h-281.5752183792;
+        double t_300=t/300;
+        double p_fle=-7405.88491821*pow(t_300,6)+42720.33203809*pow(t_300,5)
+              -102340.68781725*pow(t_300,4)+130341.47388109*pow(t_300,3)
+              -93159.58960906*pow(t_300,2)+35800.45288382*t_300-5896.15285931;
+        if(p<p_fle+0.001) p=p_fle+0.001;
+    }else if(t<312.5){
+        p=2.01660953383*t*t+0.08927982598*h*h-0.85041712566*t*h
+          -65.07277755083*t+14.88446578182*h-351.12428675255;
+        double t_300=t/300;
+        double p_fle=-7405.88491821*pow(t_300,6)+42720.33203809*pow(t_300,5)
+              -102340.68781725*pow(t_300,4)+130341.47388109*pow(t_300,3)
+              -93159.58960906*pow(t_300,2)+35800.45288382*t_300-5896.15285931;
+        if(p>p_fle-0.001) p=p_fle-0.001;
+    }else if(t>=312.5 && t<339.8638){
+        p=0.5949935025*t*t+0.0256339561*h*h-0.2484843299*t*h
+          -16.6045383455*t+4.4809006333*h-695.9067672212;
+        double t_300=t/300;
+        double p_fle=-7405.88491821*pow(t_300,6)+42720.33203809*pow(t_300,5)
+              -102340.68781725*pow(t_300,4)+130341.47388109*pow(t_300,3)
+              -93159.58960906*pow(t_300,2)+35800.45288382*t_300-5896.15285931;
+        if(p>p_fle-0.001) p=p_fle-0.001;
+    }else if(t<=350){
+        p=0.29425198222*t*t+0.01287859709*h*h-0.12402004215*t*h
+         -3.77056248947*t+1.45474007160*h-544.02491393411;
+    }
+    if(p<ps) p=ps;
+    else if(p>100) p=100;
+    double pi=p/p_base;   
+    double gamma_tau=0;
+    for(int i = 0;i<34; i++)
+        gamma_tau+=lefts[i]*pow(7.1-pi,Ii[i]);
+    double hh=tau*gamma_tau*(t+T0)*R;
+    if(abs(hh-h)>err){
+        double p0=p;
+        double h0=hh;
+        if(t>247.5711 && t<285.3041857){
+            p=100;
+            if(abs(p-p0)<0.2) p=p0-1;
+        }else{
+            p=ps;
+            if(abs(p-p0)<0.2) p=p0+1;        
+        }
+        pi=p/p_base; 
+        gamma_tau=0;
+        for(int i = 0;i<34; i++)
+            gamma_tau+=lefts[i]*pow(7.1-pi,Ii[i]);
+        hh=tau*gamma_tau*(t+T0)*R;
+        double p1=p;
+        double h1=hh;
+        p=p1+(h-h1)/(h0-h1)*(p0-p1);
+        pi=p/p_base; 
+        gamma_tau=0;
+        for(int i = 0;i<34; i++)
+            gamma_tau+=lefts[i]*pow(7.1-pi,Ii[i]);
+        hh=tau*gamma_tau*(t+T0)*R;
+        while(abs(hh-h)>err){
+            p0=p1;
+            h0=h1;
+            p1=p;
+            h1=hh;
+            p=p1+(h-h1)/(h0-h1)*(p0-p1);
+            pi=p/p_base; 
+            gamma_tau=0;
+            for(int i = 0;i<34; i++)
+                gamma_tau+=lefts[i]*pow(7.1-pi,Ii[i]);
+            hh=tau*gamma_tau*(t+T0)*R;
+        } 
+    }
+    p2=-1;
+    return p;     
+}
+double IF97Region1::TH2S(double t,double h){
+    double p2=0;
+    double p=TH2P(t,h,p2);
+    return PT2S(p,t);
+}
+double IF97Region1::TH2U(double t,double h){
+    double p2=0;
+    double p=TH2P(t,h,p2);
+    return PT2U(p,t);
+}
+double IF97Region1::TH2V(double t,double h){
+    double p2=0;
+    double p=TH2P(t,h,p2);
+    return PT2V(p,t);
+}
+double IF97Region1::TH2Cp(double t,double h){
+    double p2=0;
+    double p=TH2P(t,h,p2);
+    return PT2Cp(p,t);
+}
+double IF97Region1::TH2Cv(double t,double h){
+    double p2=0;
+    double p=TH2P(t,h,p2);
+    return PT2Cv(p,t);
+}
+double IF97Region1::TH2W(double t,double h){
+    double p2=0;
+    double p=TH2P(t,h,p2);
+    return PT2W(p,t);
+}
+double IF97Region1::TS2P(double t,double s,double& p2,int& itera){
+//0-3.983274561度区间，S-P图的等温线不是单调递减，是向上凸的类抛物线，
+  //s最大值不是出现在ps,在该区间某些s值对应两个压力，p2返回另外一个压力
+    double err=ERR2;
+    double tau=T_base/(t+T0);
+    double lefts[34];
+    double lefts_tau[34];
+    for(int i = 0;i<34; i++){        
+        lefts_tau[i]=ni[i]*Ji[i]*pow(tau-1.222,Ji[i]-1);
+        lefts[i]=ni[i]*pow(tau-1.222,Ji[i]);
+    }
+    double ps=IF97Region4::T2P(t);    
+    double p=((ps+100)/2); 
+    double pi=p/p_base;
+    double gamma_tau=0,gamma=0;
+    for(int i=0;i<34;i++){
+        double tmp=pow(7.1-pi,Ii[i]);
+        gamma_tau+=lefts_tau[i]*tmp;
+        gamma+=lefts[i]*tmp;
+    }       
+    double ss=(tau*gamma_tau-gamma)*R;    
+    itera=0;
+    if(abs(ss-s)>err){
+        double p0=p;
+        double s0=ss;
+        double p1;
+        if(ss<s)
+            if(t>3.98327)
+                p1=ps;
+            else //t:0-3.98327
+                p1=(-8.20074185412E-07)*pow(t+1,6)+(1.23732039724E-05)*pow(t+1,5)
+                  -0.00011596657*pow(t+1,4)-0.00035910009*pow(t+1,3)
+                  -0.04690677930*(t+1)*(t+1)-4.45103676080*(t+1)+23.43686133280;
+        else
+            p1=100;
+        pi=p1/p_base;
+        gamma_tau=0;
+        gamma=0;
+        for(int i=0;i<34;i++){
+            double tmp=pow(7.1-pi,Ii[i]);
+            gamma_tau+=lefts_tau[i]*tmp;
+            gamma+=lefts[i]*tmp;
+        }       
+        double s1=(tau*gamma_tau-gamma)*R;
+        p=p1+(s-s1)/(s0-s1)*(p0-p1);
+        pi=p/p_base;
+        gamma_tau=0;
+        gamma=0;
+        for(int i=0;i<34;i++){
+            double tmp=pow(7.1-pi,Ii[i]);
+            gamma_tau+=lefts_tau[i]*tmp;
+            gamma+=lefts[i]*tmp;
+        }       
+        ss=(tau*gamma_tau-gamma)*R;
+        while(abs(ss-s)>err){
+            itera++;
+            p0=p1;
+            s0=s1;
+            p1=p;
+            s1=ss;
+            p=p1+(s-s1)/(s0-s1)*(p0-p1);
+            pi=p/p_base;
+            gamma_tau=0;
+            gamma=0;
+            for(int i=0;i<34;i++){
+                double tmp=pow(7.1-pi,Ii[i]);
+                gamma_tau+=lefts_tau[i]*tmp;
+                gamma+=lefts[i]*tmp;
+            }       
+            ss=(tau*gamma_tau-gamma)*R;
+        }
+    }
+    p2=-1;
+    return p;
+}
+double IF97Region1::TS2P(double t,double s,double& p2){
+//0-3.983274561度区间，S-P图的等温线不是单调递减，是向上凸的类抛物线，
+  //s最大值不是出现在ps,在该区间某些s值对应两个压力，p2返回另外一个压力
+    double err=ERR2;
+    double tau=T_base/(t+T0);
+    double lefts[34];
+    double lefts_tau[34];
+    for(int i = 0;i<34; i++){        
+        lefts_tau[i]=ni[i]*Ji[i]*pow(tau-1.222,Ji[i]-1);
+        lefts[i]=ni[i]*pow(tau-1.222,Ji[i]);
+    }
+    double ps=IF97Region4::T2P(t);    
+    double p=((ps+100)/2); 
+    double pi=p/p_base;
+    double gamma_tau=0,gamma=0;
+    for(int i=0;i<34;i++){
+        double tmp=pow(7.1-pi,Ii[i]);
+        gamma_tau+=lefts_tau[i]*tmp;
+        gamma+=lefts[i]*tmp;
+    }       
+    double ss=(tau*gamma_tau-gamma)*R; 
+    if(abs(ss-s)>err){
+        double p0=p;
+        double s0=ss;
+        double p1;
+        if(ss<s)
+            if(t>3.98327)
+                p1=ps;
+            else //t:0-3.98327
+                p1=(-8.20074185412E-07)*pow(t+1,6)+(1.23732039724E-05)*pow(t+1,5)
+                  -0.00011596657*pow(t+1,4)-0.00035910009*pow(t+1,3)
+                  -0.04690677930*(t+1)*(t+1)-4.45103676080*(t+1)+23.43686133280;
+        else
+            p1=100;
+        pi=p1/p_base;
+        gamma_tau=0;
+        gamma=0;
+        for(int i=0;i<34;i++){
+            double tmp=pow(7.1-pi,Ii[i]);
+            gamma_tau+=lefts_tau[i]*tmp;
+            gamma+=lefts[i]*tmp;
+        }       
+        double s1=(tau*gamma_tau-gamma)*R;
+        p=p1+(s-s1)/(s0-s1)*(p0-p1);
+        pi=p/p_base;
+        gamma_tau=0;
+        gamma=0;
+        for(int i=0;i<34;i++){
+            double tmp=pow(7.1-pi,Ii[i]);
+            gamma_tau+=lefts_tau[i]*tmp;
+            gamma+=lefts[i]*tmp;
+        }       
+        ss=(tau*gamma_tau-gamma)*R;
+        while(abs(ss-s)>err){
+            p0=p1;
+            s0=s1;
+            p1=p;
+            s1=ss;
+            p=p1+(s-s1)/(s0-s1)*(p0-p1);
+            pi=p/p_base;
+            gamma_tau=0;
+            gamma=0;
+            for(int i=0;i<34;i++){
+                double tmp=pow(7.1-pi,Ii[i]);
+                gamma_tau+=lefts_tau[i]*tmp;
+                gamma+=lefts[i]*tmp;
+            }       
+            ss=(tau*gamma_tau-gamma)*R;
+        }
+    }
+    p2=-1;
+    return p;
+}
+double IF97Region1::TS2H(double t,double s){
+    double p2=0;
+    double p=TS2P(t,s,p2);
+    return PT2H(p,t);
+}
+double IF97Region1::TS2V(double t,double s){
+    double p2=0;
+    double p=TS2P(t,s,p2);
+    return PT2V(p,t);
+}
+double IF97Region1::TS2U(double t,double s){
+    double p2=0;
+    double p=TS2P(t,s,p2);
+    return PT2U(p,t);
+}
+double IF97Region1::TS2Cp(double t,double s){
+    double p2=0;
+    double p=TS2P(t,s,p2);
+    return PT2Cp(p,t);
+}
+double IF97Region1::TS2Cv(double t,double s){
+    double p2=0;
+    double p=TS2P(t,s,p2);
+    return PT2Cv(p,t);
+}
+double IF97Region1::TS2W(double t,double s){
+    double p2=0;
+    double p=TS2P(t,s,p2);
+    return PT2W(p,t);
+}
+double IF97Region1::TV2P(double t,double v,int& itera){
+    double err=ERR2;
+    double tau=T_base/(t+T0);
+    double lefts[34];
+    for(int i=0;i<34;i++)
+        lefts[i]=-ni[i]*Ii[i]*pow(tau-1.222,Ji[i]);
+    double ps=IF97Region4::T2P(t);    
+    double p=(ps+100)/2;
+    double pi=p/p_base;
+    double gamma_pi=0;
+    for(int i=0;i<34;i++)
+        gamma_pi+=lefts[i]*pow(7.1-pi,Ii[i]-1);
+    double vv=pi*gamma_pi*(t+T0)*R/(p*1000);
+    itera=0;
+    if(abs(vv-v)>err){
+        double p0=p;
+        double v0=vv;
+        double p1;
+        if(vv<v)
+            p1=ps;
+        else
+            p1=100;
+        pi=p1/p_base;
+        gamma_pi=0;
+        for(int i=0;i<34;i++)
+            gamma_pi+=lefts[i]*pow(7.1-pi,Ii[i]-1);
+        double v1=pi*gamma_pi*(t+T0)*R/(p1*1000);    
+        p=p1+(v-v1)/(v0-v1)*(p0-p1);
+        pi=p/p_base;
+        gamma_pi=0;
+        for(int i=0;i<34;i++)
+            gamma_pi+=lefts[i]*pow(7.1-pi,Ii[i]-1);
+        vv=pi*gamma_pi*(t+T0)*R/(p*1000);
+        while(abs(vv-v)>err){
+            itera++;
+            p0=p1;
+            v0=v1;
+            p1=p;
+            v1=vv;
+            p=p1+(v-v1)/(v0-v1)*(p0-p1);
+            pi=p/p_base;
+            gamma_pi=0;
+            for(int i=0;i<34;i++)
+                gamma_pi+=lefts[i]*pow(7.1-pi,Ii[i]-1);
+            vv=pi*gamma_pi*(t+T0)*R/(p*1000);
+        }    
+    }
+    return p;  
+}
+double IF97Region1::TU2P(double t,double u,double&p2,int& itera){
+//0-3.983274561度区间，U-P图的等温线不是单调递减，是向上凸的类抛物线，
+  //u最大值不是出现在ps,在该区间某些u值对应两个压力，p2返回另外一个压力
+    double err=ERR;
+    double tau=T_base/(t+T0);
+    double lefts_tau[34];
+    double lefts_pi[34];
+    for(int i=0;i<34;i++){
+        lefts_tau[i]=ni[i]*Ji[i]*pow(tau-1.222,Ji[i]-1);
+        lefts_pi[i]=-ni[i]*Ii[i]*pow(tau-1.222,Ji[i]);
+    }
+    double ps=IF97Region4::T2P(t);    
+    double p=(ps+100)/2;
+    double pi=p/p_base;
+    double gamma_tau=0;
+    double gamma_pi=0;
+    for(int i = 0;i<34; i++){
+        gamma_tau+=lefts_tau[i]*pow(7.1-pi,Ii[i]);
+        gamma_pi+=lefts_pi[i]*pow(7.1-pi,Ii[i]-1);
+    }
+    double uu=(tau*gamma_tau-pi*gamma_pi)*(t+T0)*R;
+    itera=0;
+    if(abs(uu-u)>err){
+        double p0=p;
+        double u0=uu;
+        double p1;
+        if(uu<u){       
+            if(t>3.9833)
+                p1=ps;
+            else //t:0-3.9833
+                p1=0.0003+(-4.56530990E-06)*pow(t+1,6)+(2.65894821E-05)*pow(t+1,5)
+                  -(6.40282810E-04)*pow(t+1,4)-(1.36629796E-03)*pow(t+1,3)
+                  -0.2182015028*pow(t+1,2)-8.6331853045*(t+1)+48.9940860488;
+        }else
+            p1=100;
+        pi=p1/p_base;
+        gamma_tau=0;
+        gamma_pi=0;
+        for(int i = 0;i<34; i++){
+            gamma_tau+=lefts_tau[i]*pow(7.1-pi,Ii[i]);
+            gamma_pi+=lefts_pi[i]*pow(7.1-pi,Ii[i]-1);
+        }
+        double u1=(tau*gamma_tau-pi*gamma_pi)*(t+T0)*R;   
+        p=p1+(u-u1)/(u0-u1)*(p0-p1);
+        pi=p/p_base;
+        gamma_tau=0;
+        gamma_pi=0;
+        for(int i = 0;i<34; i++){
+            gamma_tau+=lefts_tau[i]*pow(7.1-pi,Ii[i]);
+            gamma_pi+=lefts_pi[i]*pow(7.1-pi,Ii[i]-1);
+        }
+        uu=(tau*gamma_tau-pi*gamma_pi)*(t+T0)*R;         
+        while(abs(uu-u)>err){
+            itera++;
+            p0=p1;
+            u0=u1;
+            p1=p;
+            u1=uu;   
+            p=p1+(u-u1)/(u0-u1)*(p0-p1);
+            pi=p/p_base;
+            gamma_tau=0;
+            gamma_pi=0;
+            for(int i = 0;i<34; i++){
+                gamma_tau+=lefts_tau[i]*pow(7.1-pi,Ii[i]);
+                gamma_pi+=lefts_pi[i]*pow(7.1-pi,Ii[i]-1);
+            }
+            uu=(tau*gamma_tau-pi*gamma_pi)*(t+T0)*R; 
+        }    
+    }
+    p2=-1;
+    return p;  
+}
+/*获取0-3.98327度区间过冷水U-P图等温线U值最小时的p
+int count;
+double PatMinU(double t,double left,double right,double left_u,double right_u){
+    count++;
+    if(right-left<=0.0000005){//求出的p误差范围是+-2*dp
+        double dp=(right-left);
+        double u0=IF97Region1::PT2U(left-dp,t);
+        double u1=left_u;
+        double u2=right_u;
+        double u3=IF97Region1::PT2U(right+dp,t);
+        if((u0<u1 || u0<u2) && (u3<u2 || u3<u1)){
+            return (right+left)/2.0;
+        }
+        return -1;
+    }
+    double u=IF97Region1::PT2U((left+right)/2.0,t);
+    if(left_u<u && u<right_u)
+        return PatMinU(t,(left+right)/2.0,right,u,right_u);
+    else if(left_u>u && u>right_u)
+        return PatMinU(t,left,(left+right)/2.0,left_u,u);
+    else{
+        srand((int)time(0));
+        int select=rand()%2;
+        if(select==0){
+            double p=PatMinU(t,left,(left+right)/2.0,left_u,u);
+            if(p>0)
+                return p;
+            return PatMinU(t,(left+right)/2.0,right,u,right_u);
+        }else{            
+            double p=PatMinU(t,(left+right)/2.0,right,u,right_u);
+            if(p>0)
+                return p;
+            return PatMinU(t,left,(left+right)/2.0,left_u,u);
+        }
+    }
+}
+void inflectionPs(){
+    for(double t=0;t<4;t+=0.0001){
+        count=0;
+        double ps=IF97Region4::T2P(t);        
+        double p=PatMinU(t,ps,60,IF97Region1::PT2S(ps,t),IF97Region1::PT2S(60,t));
+        double tt=t+1;
+        cout<<setprecision(10)<<tt*tt*tt*tt*tt*tt<<"\t"<<tt*tt*tt*tt*tt<<"\t"
+             <<tt*tt*tt*tt<<"\t"<<tt*tt*tt<<"\t"<<tt*tt<<"\t"
+             <<tt<<"\t"<<1<<"\t"<<p<<endl;
+        // cout<<setprecision(10)<<t<<'\t'<<p<<"\t"<<count<<'\t';
+        // cout<<setprecision(10)<<IF97Region1::PT2U(p-0.0001,t)<<'\t';
+        // cout<<setprecision(10)<<IF97Region1::PT2U(p,t)<<'\t';
+        // cout<<setprecision(10)<<IF97Region1::PT2U(p+0.0001,t)<<endl;
+    }
+}
+//end*获取0-3.98327度区间过冷水U-P图等温线U值最小时的*/
+/*获取0-3.983274561度区间过冷水S-P图的等温线S值最小时的p
+int count;
+double PatMinS(double t,double left,double right,double left_s,double right_s){
+    count++;
+    if(right-left<=0.0000005){//求出的p误差范围是+-2*dp
+        double dp=(right-left);
+        double s0=IF97Region1::PT2S(left-dp,t);
+        double s1=left_s;
+        double s2=right_s;
+        double s3=IF97Region1::PT2S(right+dp,t);
+        if((s0<s1 || s0<s2) && (s3<s2 || s3<s1)){
+            return (right+left)/2.0;
+        }
+        return -1;
+    }
+    double s=IF97Region1::PT2S((left+right)/2.0,t);
+    if(left_s<s && s<right_s)
+        return PatMinS(t,(left+right)/2.0,right,s,right_s);
+    else if(left_s>s && s>right_s)
+        return PatMinS(t,left,(left+right)/2.0,left_s,s);
+    else{
+        srand((int)time(0));
+        int select=rand()%2;
+        if(select==0){
+            double p=PatMinS(t,left,(left+right)/2.0,left_s,s);
+            if(p>0)
+                return p;
+            return PatMinS(t,(left+right)/2.0,right,s,right_s);
+        }else{            
+            double p=PatMinS(t,(left+right)/2.0,right,s,right_s);
+            if(p>0)
+                return p;
+            return PatMinS(t,left,(left+right)/2.0,left_s,s);
+        }
+    }
+}
+void inflectionPs(){
+    for(double t=0;t<3.98328;t+=0.0001){
+        count=0;
+        double ps=IF97Region4::T2P(t);        
+        double p=PatMinS(t,ps,100,IF97Region1::PT2S(ps,t),IF97Region1::PT2S(100,t));
+        double tt=t+1;
+        cout<<setprecision(10)<<tt*tt*tt*tt*tt*tt<<"\t"<<tt*tt*tt*tt*tt<<"\t"
+            <<tt*tt*tt*tt<<"\t"<<tt*tt*tt<<"\t"<<tt*tt<<"\t"
+            <<tt<<"\t"<<1<<"\t"<<p<<endl;
+        //cout<<setprecision(10)<<t<<'\t'<<p;
+        // cout<<count<<'\t';
+        // cout<<setprecision(10)<<IF97Region1::PT2S(p-0.000001,t)<<'\t';
+        // cout<<setprecision(10)<<IF97Region1::PT2S(p,t)<<'\t';
+        // cout<<setprecision(10)<<IF97Region1::PT2S(p+0.000001,t)<<endl;
+    }
+}
+end获取0-3.983274561度区间过冷水S-P图的等温线S值最小时的p */
 /*获取从247.5712-339.8637度过冷水等温线焓值最小时的p
 int count=0;
 double PatMinH(double t,double left,double right,double left_h,double right_h){
@@ -721,36 +1267,176 @@ int main(){
     inflectionPs();
     return 0;
 }
+void findMinEndPoint(){
+    double t,p0,p1,h0,h1,h;
+    double dt=(339.8637-285.3041857)/10000;
+    for(t=285.3041857;t<=339.8637;t+=dt){
+        t=339.8637;
+        p0=IF97Region4::T2P(t);
+        p1=-7405.88491821289*pow(t/300,6)+42720.3320380859*pow(t/300,5)-102340.687817246*pow(t/300,4)
+            +130341.473881092*pow(t/300,3)-93159.5896090619*pow(t/300,2)
+            +35800.4528838225*(t/300)-5896.15285930626;
+        h=IF97Region1::PT2H(100,t);
+        double p=(p0+p1)/2;
+        double hh=IF97Region1::PT2H(p,t);
+        while(p0<p1 && abs(hh-h)>1E-7){
+            if(hh>h)
+                p0=p;
+            else
+                p1=p;
+            p=(p0+p1)/2.0;
+            hh=IF97Region1::PT2H(p,t);
+        }
+        cout<<setprecision(15)<<t<<"\t"<<p<<"\t"<<hh<<"\t"<<abs(100*(hh-h)/h)<<endl;
+    }
+}
 end 获取从247.6-339.9度过冷水等温线焓值最小时的p*/
-
-void verify(){
-    double p,t,h,s,tt,pp;
-    int i;
+void verify2(){
+    double p,t,h,s,tt,pp,p2;
+    int i=0,max=0;
     for(t=1;t<=247.5;t+=0.5){
         p=IF97Region4::T2P(t)+0.000000;
         for(;p<=100;p+=0.5){
             h=IF97Region1::PT2H(p,t);
-            pp=IF97Region1::TH2P(t,h,i);
+            pp=IF97Region1::TH2P(t,h,p2,i);
+            if(i>max) max=i;
+            cout<<setprecision(10)<<i<<'\t'<<h<<"\t"<<p<<"\t"<<pp<<"\t"<<t<<"\t"<<abs(100.0*(pp-p)/p)<<endl;
+        }
+    }
+    double dt=(285.3041857-247.58)/200;  
+    for(t=247.58;t<285.3041857;t+=dt){
+        p=0.1-7405.88491821289*pow(t/300,6)+42720.3320380859*pow(t/300,5)-102340.687817246*pow(t/300,4)
+            +130341.473881092*pow(t/300,3)-93159.5896090619*pow(t/300,2)
+            +35800.4528838225*(t/300)-5896.15285930626;
+        double p1=100;
+        for(;p<=p1;p+=0.5){
+            h=IF97Region1::PT2H(p,t);
+            pp=IF97Region1::TH2P(t,h,p2,i);
+            if(i>max) max=i;
+            cout<<setprecision(10)<<i<<'\t'<<h<<"\t"<<p<<"\t"<<pp<<"\t"<<t<<"\t"<<abs(100.0*(pp-p)/p)<<endl;
+        }
+    }
+    dt=(339.8637-285.3041857)/200;    
+    for(t=285.3041857;t<339.8638;t+=dt){
+        p=IF97Region4::T2P(t)+0.000000;
+        double p1=-0.1-7405.88491821289*pow(t/300,6)+42720.3320380859*pow(t/300,5)-102340.687817246*pow(t/300,4)
+            +130341.473881092*pow(t/300,3)-93159.5896090619*pow(t/300,2)
+            +35800.4528838225*(t/300)-5896.15285930626;
+        for(;p<=p1;p+=0.5){
+            h=IF97Region1::PT2H(p,t);
+            pp=IF97Region1::TH2P(t,h,p2,i);
+            if(i>max) max=i;
+            cout<<setprecision(10)<<i<<'\t'<<h<<"\t"<<p<<"\t"<<pp<<"\t"<<t<<"\t"<<abs(100.0*(pp-p)/p)<<endl;
+        }
+    }
+    for(t=340;t<=350;t+=0.5){    
+        p=IF97Region4::T2P(t)+0.000000;
+        for(;p<=100;p+=0.5){
+            h=IF97Region1::PT2H(p,t);
+            pp=IF97Region1::TH2P(t,h,p2,i);
+            if(i>max) max=i;
             cout<<setprecision(10)<<i<<'\t'<<h<<"\t"<<p<<"\t"<<pp<<"\t"<<t<<"\t"<<abs(100.0*(pp-p)/p)<<endl;
         }
     } 
+    cout<<max<<endl;
 }
 void createFitdata(){
-    double p,t,h,s,tt,pp;
-    for(t=200;t<=247.5;t+=2.5){
-        p=IF97Region4::T2P(t)+0.00001;
+    double p,t,h,s,u,tt,pp;
+    t=280;
+    for(t=0;t<350.1;t+=1){
+        //p=0.001-7405.88491821289*pow(t/300,6)+42720.3320380859*pow(t/300,5)-102340.687817246*pow(t/300,4)
+        //    +130341.473881092*pow(t/300,3)-93159.5896090619*pow(t/300,2)
+        //    +35800.4528838225*(t/300)-5896.15285930626;
+        p=IF97Region4::T2P(t);
+        //tt=t/50;
         double dp=(100-p)/60;
         while(p<100.1){
-            h=IF97Region1::PT2H(p,t);
-            cout<<setprecision(10)<<t*t<<"\t"<<h*h<<"\t"<<t*h<<"\t"
-                <<t<<"\t"<<h<<"\t"<<1<<"\t"<<p<<endl;
+            u=IF97Region1::PT2U(p,t);
+            //cout<<setprecision(10)<<tt*tt<<"\t"<<s*s<<"\t"<<tt*s<<"\t"
+            //    <<tt<<"\t"<<s<<"\t"<<1<<"\t"<<p<<endl;
+            cout<<setprecision(10)<<p<<"\t"<<t<<"\t"<<u<<endl;
             p+=dp;            
         }
     } 
 }
+void verifyTS(){
+    double p,t,h,s,tt,pp,p2;
+    int i=0,max=0;
+    for(t=0;t<3.9833;t+=0.01){
+        p=(-8.20074185412E-07)*pow(t+1,6)+(1.23732039724E-05)*pow(t+1,5)
+          -0.00011596657*pow(t+1,4)-0.00035910009*pow(t+1,3)
+          -0.04690677930*(t+1)*(t+1)-4.45103676080*(t+1)+23.43686133280;
+        for(;p<100.1;p+=0.5){
+            s=IF97Region1::PT2S(p,t);
+            pp=IF97Region1::TS2P(t,s,p2,i);
+            if(i>max) max=i;
+            cout<<setprecision(10)<<i<<'\t'<<s<<"\t"<<p<<"\t"<<pp<<"\t"<<t<<"\t"<<abs(100.0*(pp-p)/p)<<endl;
+        }
+    }
+    for(t=4;t<350.1;t+=0.5){
+        p=IF97Region4::T2P(t)+0.000000;
+        for(;p<100.1;p+=0.5){
+            s=IF97Region1::PT2S(p,t);
+            pp=IF97Region1::TS2P(t,s,p2,i);
+            if(i>max) max=i;
+            cout<<setprecision(10)<<i<<'\t'<<s<<"\t"<<p<<"\t"<<pp<<"\t"<<t<<"\t"<<abs(100.0*(pp-p)/p)<<endl;
+        }
+    }
+    cout<<max<<endl;
+}
+void verifyTV(){
+    double p,t,v,pp;
+    int i=0,max=0;
+    for(t=0;t<350.1;t+=0.5){
+        p=IF97Region4::T2P(t)+0.000000;
+        for(;p<100.1;p+=0.5){
+            v=IF97Region1::PT2V(p,t);
+            pp=IF97Region1::TV2P(t,v,i);
+            if(i>max) max=i;
+            cout<<setprecision(10)<<i<<'\t'<<v<<"\t"<<p<<"\t"<<pp<<"\t"<<t<<"\t"<<abs(100.0*(pp-p)/p)<<endl;
+        }
+    }
+    cout<<max<<endl;
+}
+void verifyTU(){
+    double p,t,h,u,tt,pp,p2;
+    int i=0,max=0;
+    for(t=0;t<=3.9833;t+=0.01){
+        p=(-4.56530990E-06)*pow(t+1,6)+(2.65894821E-05)*pow(t+1,5)
+            -(6.40282810E-04)*pow(t+1,4)-(1.36629796E-03)*pow(t+1,3)
+            -0.2182015028*pow(t+1,2)-8.6331853045*(t+1)+48.9940860488;  
+        for(;p<100.1;p+=0.5){
+            u=IF97Region1::PT2U(p,t);
+            pp=IF97Region1::TU2P(t,u,p2,i);
+            if(i>max) max=i;
+            cout<<setprecision(10)<<i<<'\t'<<u<<"\t"<<p<<"\t"<<pp<<"\t"<<t<<"\t"<<abs(100.0*(pp-p)/p)<<endl;
+        }
+    }
+    for(t=4;t<350.1;t+=0.5){
+        p=IF97Region4::T2P(t)+0.000000;
+        for(;p<100.1;p+=0.5){
+            u=IF97Region1::PT2U(p,t);
+            pp=IF97Region1::TU2P(t,u,p2,i);
+            if(i>max) max=i;
+            cout<<setprecision(10)<<i<<'\t'<<u<<"\t"<<p<<"\t"<<pp<<"\t"<<t<<"\t"<<abs(100.0*(pp-p)/p)<<endl;
+        }
+    }
+    cout<<max<<endl;
+}
 int main(){ 
-    verify();
+    double p,t,h,u,s,v,pp,p2;
+    int i;
+    p=13.02392378;
+    t=331;
+    h=IF97Region1::PT2H(p,t);
+    u=IF97Region1::PT2U(p,t);
+    pp=IF97Region1::TV2P(t,v,i);
+    //cout<<setprecision(10)<<i<<'\t'<<s<<"\t"<<p<<"\t"<<pp<<"\t"<<t<<"\t"<<abs(100.0*(pp-p)/p)<<endl;
+    //verifyTS();
+    //verifyTV();
+    verifyTU();
     //createFitdata();
+    //inflectionPs();
     return 0;
 } 
 

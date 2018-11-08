@@ -87,7 +87,8 @@ public: //static function: T,V to
     static double TV2Cv(double t,double v);
     static double TV2W(double t,double v);
 public: //static function: T,U to 
-    static double TU2P(double t,double u,int& itera);
+    static double TU2P(double t,double u,double& p2,int& itera);
+    static double TU2P(double t,double u,double& p2);
     static double TU2P(double t,double u);
     static double TU2H(double t,double u);
     static double TU2S(double t,double u);
