@@ -105,6 +105,15 @@ public: //static function: T,Cp to
     static double TCp2U(double t,double Cp);
     static double TCp2Cv(double t,double Cp);
     static double TCp2W(double t,double Cp);
+public: //static function: T,Cv to 
+    static double TCv2P(double t,double Cv,double&p2,int& itera);
+    static double TCv2P(double t,double Cv,double&p2);
+    static double TCv2H(double t,double Cv);
+    static double TCv2S(double t,double Cv);
+    static double TCv2V(double t,double Cv);
+    static double TCv2U(double t,double Cv);
+    static double TCv2Cv(double t,double Cv);
+    static double TCv2W(double t,double Cv);
 private:
     const static double ERR0;
     const static double ERR;

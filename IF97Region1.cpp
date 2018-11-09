@@ -259,14 +259,21 @@ double IF97Region1::PS2W(double p,double s){
 } 
 double IF97Region1::PV2T(double p,double v,int& itera){
     double pi=p/p_base;
+    double lefts[34];
+    for(int i = 0;i<34; i++)
+        lefts[i]=-ni[i]*Ii[i]*pow(7.1-pi,Ii[i]-1);
  /*.利用拟合的粗略公式设置初值t*/
     //double t=0.00038689898736603837*p*p-1277125254.350867*v*v+209.65767720269834*p*v
     //       +0.334694858543311*p+3762351.523728678*v-2447.7223094011324;
     double t=0.00027955518134947083*p*p-1341269530.928515*v*v+212.1875236957701*p*v
              +0.3412237701411934*p+3905702.229360094*v-2526.3683009658025;
-    double lefts[34];
-    for(int i = 0;i<34; i++)
-        lefts[i]=-ni[i]*Ii[i]*pow(7.1-pi,Ii[i]-1);    
+    double t_max=350;
+    if(p<16.52916425)
+        t_max=IF97Region4::P2T(p);
+    if(t>t_max)
+        t=t_max;
+    else if(t<0)
+        t=0;    
     double tau=T_base/(t+T0);
     double gamma_pi=0;
     for(int i=0;i<34;i++)
@@ -276,15 +283,16 @@ double IF97Region1::PV2T(double p,double v,int& itera){
     if(abs(vv-v)>ERR2){
         double t0=t;
         double v0=vv;
-        t=IF97Region4::P2T(p)-15;//TODO:初值选择再优化
-        t=(abs(t-t0)<15)?t0-15:t;    
-        tau=T_base/(t+T0);
+        double t1;
+        if(vv<v)
+            t1=t_max;
+        else
+            t1=0;  
+        tau=T_base/(t1+T0);
         gamma_pi=0;
         for(int i=0;i<34;i++)
             gamma_pi+=lefts[i]*pow(tau-1.222,Ji[i]);
-        vv=pi*gamma_pi*(t+T0)*R/(p*1000);
-        double t1=t;
-        double v1=vv;
+        double v1=pi*gamma_pi*(t1+T0)*R/(p*1000);
         t=t1+(v-v1)/(v0-v1)*(t0-t1);
         tau=T_base/(t+T0);
         gamma_pi=0;
@@ -530,7 +538,7 @@ double IF97Region1::PU2W(double p,double u){
     return PT2W(p,t);
 }
 double IF97Region1::PCp2T(double p,double cp,int& itera){
- /*  由于过冷水相同压力下不同温度的Cp相差很小，PCp2T迭代出的t值很难还原回原来的t
+/*  由于过冷水相同压力下不同温度的Cp相差很小，PCp2T迭代出的t值很难还原回原来的t
  不建议采用P，Cp to求其他参数 */
     double pi=p/p_base;
  /*.利用拟合的粗略公式设置初值t*/
@@ -1111,6 +1119,157 @@ double IF97Region1::TU2P(double t,double u,double&p2,int& itera){
     p2=-1;
     return p;  
 }
+double IF97Region1::TCp2P(double t,double cp,int& itera){
+    double err=ERR;
+    double tau=T_base/(t+T0);
+    double lefts[34];
+    for(int i=0;i<34;i++)
+        lefts[i]=ni[i]*Ji[i]*(Ji[i]-1)*pow(tau-1.222,Ji[i]-2); 
+    double ps=IF97Region4::T2P(t);    
+    double p=(ps+100)/2;    
+    double pi=p/p_base;
+    double gamma_tau2=0;
+    for(int i = 0;i<34; i++)
+		gamma_tau2+=lefts[i]*pow(7.1-pi,Ii[i]);    
+    double cpcp=-tau*tau*gamma_tau2*R;
+    itera=0;
+    if(abs(cpcp-cp)>err){
+        double p0=p;
+        double cp0=cpcp;
+        double p1;
+        if(cpcp<cp)
+            p1=ps;
+        else
+            p1=100;
+        pi=p1/p_base;
+        gamma_tau2=0;
+        for(int i = 0;i<34; i++)
+            gamma_tau2+=lefts[i]*pow(7.1-pi,Ii[i]);    
+        double cp1=-tau*tau*gamma_tau2*R;
+        p=p1+(cp-cp1)/(cp0-cp1)*(p0-p1);
+        pi=p/p_base;
+        gamma_tau2=0;
+        for(int i = 0;i<34; i++)
+            gamma_tau2+=lefts[i]*pow(7.1-pi,Ii[i]);    
+        cpcp=-tau*tau*gamma_tau2*R;
+        while(abs(cpcp-cp)>err){
+            itera++;
+            p0=p1;
+            cp0=cp1;
+            p1=p;
+            cp1=cpcp;
+            p=p1+(cp-cp1)/(cp0-cp1)*(p0-p1);
+            pi=p/p_base;
+            gamma_tau2=0;
+            for(int i = 0;i<34; i++)
+                gamma_tau2+=lefts[i]*pow(7.1-pi,Ii[i]);    
+            cpcp=-tau*tau*gamma_tau2*R;
+        }        
+    }
+    return p;
+}
+double IF97Region1::TCv2P(double t,double cv,double& p2, int& itera){
+//TODO:t>=302.4385444，Cv-P图等温线不是单调递减，是向下凹类抛物线(很平缓不明显)
+  //cv最小值不是出现在100MPa,在该区间某些cv值对应两个压力，p2返回另外一个压力
+    double err=ERR;
+    double tau=T_base/(t+T0);
+    double lefts_tau2[34];
+    double lefts_pi[34];
+    double lefts_pi2[34];
+    double lefts_pitau[34];
+    for(int i=0;i<34;i++){
+        lefts_tau2[i]=ni[i]*Ji[i]*(Ji[i]-1)*pow(tau-1.222,Ji[i]-2);
+        lefts_pi[i]=-ni[i]*Ii[i]*pow(tau-1.222,Ji[i]);
+        lefts_pi2[i]=ni[i]*Ii[i]*(Ii[i]-1)*pow(tau-1.222,Ji[i]);
+		lefts_pitau[i]=-ni[i]*Ii[i]*Ji[i]*pow(tau-1.222,Ji[i]-1);
+    }
+    double ps=IF97Region4::T2P(t);    
+    double p=(ps+100)/2;    
+    double pi=p/p_base;
+    double gamma_tau2=0;
+    double gamma_pi=0;
+    double gamma_pi2=0;
+    double gamma_pitau=0;
+    for(int i = 0;i<34; i++){
+		gamma_tau2+=lefts_tau2[i]*pow(7.1-pi,Ii[i]);
+        gamma_pi2+=lefts_pi2[i]*pow(7.1-pi,Ii[i]-2);
+        double tmp=pow(7.1-pi,Ii[i]-1);
+        gamma_pi+=lefts_pi[i]*tmp;
+        gamma_pitau+=lefts_pitau[i]*tmp;
+    }     
+    double cvcv=(-tau*tau*gamma_tau2+(gamma_pi-tau*gamma_pitau)
+                *(gamma_pi-tau*gamma_pitau)/gamma_pi2)*R;
+    itera=0;
+    if(abs(cvcv-cv)>err){
+        double p0=p;
+        double cv0=cvcv;
+        double p1;
+        if(cvcv<cv)
+            p1=ps;
+        else{
+            if(t>=302.4385444)
+                p1=97.55;
+            else
+                p1=100;
+        }
+        pi=p1/p_base;
+        gamma_tau2=0;
+        gamma_pi=0;
+        gamma_pi2=0;
+        gamma_pitau=0;
+        for(int i = 0;i<34; i++){
+            gamma_tau2+=lefts_tau2[i]*pow(7.1-pi,Ii[i]);
+            gamma_pi2+=lefts_pi2[i]*pow(7.1-pi,Ii[i]-2);
+            double tmp=pow(7.1-pi,Ii[i]-1);
+            gamma_pi+=lefts_pi[i]*tmp;
+            gamma_pitau+=lefts_pitau[i]*tmp;
+        }     
+        double cv1=(-tau*tau*gamma_tau2+(gamma_pi-tau*gamma_pitau)
+                *(gamma_pi-tau*gamma_pitau)/gamma_pi2)*R;        
+        p=p1+(cv-cv1)/(cv0-cv1)*(p0-p1);
+        pi=p/p_base;
+        gamma_tau2=0;
+        gamma_pi=0;
+        gamma_pi2=0;
+        gamma_pitau=0;
+        for(int i = 0;i<34; i++){
+            gamma_tau2+=lefts_tau2[i]*pow(7.1-pi,Ii[i]);
+            gamma_pi2+=lefts_pi2[i]*pow(7.1-pi,Ii[i]-2);
+            double tmp=pow(7.1-pi,Ii[i]-1);
+            gamma_pi+=lefts_pi[i]*tmp;
+            gamma_pitau+=lefts_pitau[i]*tmp;
+        }     
+        cvcv=(-tau*tau*gamma_tau2+(gamma_pi-tau*gamma_pitau)
+                *(gamma_pi-tau*gamma_pitau)/gamma_pi2)*R;
+        while(abs(cvcv-cv)>err){
+            itera++;
+            p0=p1;
+            cv0=cv1;
+            p1=p;
+            cv1=cvcv;        
+            p=p1+(cv-cv1)/(cv0-cv1)*(p0-p1);
+            p=p<ps?ps:p;
+            pi=p/p_base;
+            gamma_tau2=0;
+            gamma_pi=0;
+            gamma_pi2=0;
+            gamma_pitau=0;
+            for(int i = 0;i<34; i++){
+                gamma_tau2+=lefts_tau2[i]*pow(7.1-pi,Ii[i]);
+                gamma_pi2+=lefts_pi2[i]*pow(7.1-pi,Ii[i]-2);
+                double tmp=pow(7.1-pi,Ii[i]-1);
+                gamma_pi+=lefts_pi[i]*tmp;
+                gamma_pitau+=lefts_pitau[i]*tmp;
+            }     
+            cvcv=(-tau*tau*gamma_tau2+(gamma_pi-tau*gamma_pitau)
+                    *(gamma_pi-tau*gamma_pitau)/gamma_pi2)*R;
+            
+        }        
+    }
+    p2=-1;
+    return p;
+}
+
 /*获取0-3.98327度区间过冷水U-P图等温线U值最小时的p
 int count;
 double PatMinU(double t,double left,double right,double left_u,double right_u){
@@ -1341,20 +1500,20 @@ void verify2(){
     cout<<max<<endl;
 }
 void createFitdata(){
-    double p,t,h,s,u,tt,pp;
+    double p,t,h,s,u,cp,cv,tt,pp;
     t=280;
-    for(t=0;t<350.1;t+=1){
+    for(t=0;t<350.1;t+=0.5){
         //p=0.001-7405.88491821289*pow(t/300,6)+42720.3320380859*pow(t/300,5)-102340.687817246*pow(t/300,4)
         //    +130341.473881092*pow(t/300,3)-93159.5896090619*pow(t/300,2)
         //    +35800.4528838225*(t/300)-5896.15285930626;
         p=IF97Region4::T2P(t);
         //tt=t/50;
-        double dp=(100-p)/60;
+        double dp=(100-p)/500;
         while(p<100.1){
-            u=IF97Region1::PT2U(p,t);
+            cv=IF97Region1::PT2Cv(p,t);
             //cout<<setprecision(10)<<tt*tt<<"\t"<<s*s<<"\t"<<tt*s<<"\t"
             //    <<tt<<"\t"<<s<<"\t"<<1<<"\t"<<p<<endl;
-            cout<<setprecision(10)<<p<<"\t"<<t<<"\t"<<u<<endl;
+            cout<<setprecision(10)<<p<<"\t"<<t<<"\t"<<cv<<endl;
             p+=dp;            
         }
     } 
@@ -1423,138 +1582,127 @@ void verifyTU(){
     }
     cout<<max<<endl;
 }
+void verifyTCp(){
+    double p,t,cp,pp;
+    int i=0,max=0;
+    for(t=0;t<350.1;t+=0.5){
+        p=IF97Region4::T2P(t)+0.000000;
+        double dp=(100-p)/160;
+        for(;p<100.1;p+=dp){
+            cp=IF97Region1::PT2Cp(p,t);
+            pp=IF97Region1::TCp2P(t,cp,i);
+            if(i>max) max=i;
+            cout<<setprecision(10)<<i<<'\t'<<cp<<"\t"<<p<<"\t"<<pp<<"\t"<<t<<"\t"<<abs(100.0*(pp-p)/p)<<endl;
+        }
+    }
+    cout<<max<<endl;
+}
+void verifyTCv(){
+    double p,t,cv,pp,p2;
+    int i=0,max=0;
+    for(t=0;t<=350.1;t+=0.5){
+        p=IF97Region4::T2P(t)+0.000000;
+        double dp=(100-p)/160;
+        for(;p<100.1;p+=dp){
+            cv=IF97Region1::PT2Cv(p,t);
+            pp=IF97Region1::TCv2P(t,cv,p2,i);
+            if(i>max) max=i;
+            cout<<setprecision(10)<<i<<'\t'<<cv<<"\t"<<p<<"\t"<<pp<<"\t"<<t<<"\t"<<abs(100.0*(pp-p)/p)<<endl;
+        }
+    }
+    cout<<max<<endl;
+}
+void verifyPH(){
+    double p,t,h,tt,t2;
+    int i=0,max=0;
+    double dp=(100-0.000611657)/200;
+    for(p=0.000611657;p<=100;p+=dp){
+        double maxt=350;
+        if(p<=22.064){
+            maxt=IF97Region4::P2T(p);
+            maxt=maxt>350?350:maxt;
+        }
+        double dt=maxt/200;
+        for(t=0;t<=maxt;t+=dt){
+            h=IF97Region1::PT2H(p,t);
+            tt=IF97Region1::PH2T(p,h,i);
+            if(i>max) max=i;
+            cout<<setprecision(10)<<i<<'\t'<<h<<"\t"<<p<<"\t"<<t<<"\t"<<tt<<"\t";
+            if(t<1E-9)
+                cout<<setprecision(10)<<abs(tt-t)<<endl;
+            else
+                cout<<setprecision(10)<<abs(100.0*(tt-t)/t)<<endl;
+        }
+    }
+    cout<<max<<endl;
+}
+void verifyPS(){
+    double p,t,s,tt,t2;
+    int i=0,max=0;
+    double dp=(100-0.000611657)/200;
+    for(p=0.000611657;p<=100;p+=dp){
+        double maxt=350;
+        if(p<=22.064){
+            maxt=IF97Region4::P2T(p);
+            maxt=maxt>350?350:maxt;
+        }
+        double dt=maxt/200;
+        for(t=0;t<=maxt;t+=dt){
+            s=IF97Region1::PT2S(p,t);
+            tt=IF97Region1::PS2T(p,s,i);
+            if(i>max) max=i;
+            cout<<setprecision(10)<<i<<'\t'<<s<<"\t"<<p<<"\t"<<t<<"\t"<<tt<<"\t";
+            if(t<1E-9)
+                cout<<setprecision(10)<<abs(tt-t)<<endl;
+            else
+                cout<<setprecision(10)<<abs(100.0*(tt-t)/t)<<endl;
+        }
+    }
+    cout<<max<<endl;
+}
+void verifyPV(){
+    double p,t,v,tt,t2;
+    int i=0,max=0;
+    double dp=(100-0.000611657)/200;
+    for(p=0.000611657;p<=100;p+=dp){
+        double maxt=350;
+        if(p<=22.064){
+            maxt=IF97Region4::P2T(p);
+            maxt=maxt>350?350:maxt;
+        }
+        double dt=maxt/200;
+        for(t=0;t<=maxt;t+=dt){
+            v=IF97Region1::PT2V(p,t);
+            tt=IF97Region1::PV2T(p,v,i);
+            if(i>max) max=i;
+            cout<<setprecision(10)<<i<<'\t'<<v<<"\t"<<p<<"\t"<<t<<"\t"<<tt<<"\t";
+            if(t<1E-9)
+                cout<<setprecision(10)<<abs(tt-t)<<endl;
+            else
+                cout<<setprecision(10)<<abs(100.0*(tt-t)/t)<<endl;
+        }
+    }
+    cout<<max<<endl;
+}
 int main(){ 
-    double p,t,h,u,s,v,pp,p2;
+    double p,t,h,u,s,v,cp,cv,pp,tt,p2;
     int i;
-    p=13.02392378;
-    t=331;
-    h=IF97Region1::PT2H(p,t);
-    u=IF97Region1::PT2U(p,t);
-    pp=IF97Region1::TV2P(t,v,i);
+    p=0.50060859870;
+    t=0.75941039740;
+    v=IF97Region1::PT2V(p,t);
+    tt=IF97Region1::PV2T(p,v,i);
     //cout<<setprecision(10)<<i<<'\t'<<s<<"\t"<<p<<"\t"<<pp<<"\t"<<t<<"\t"<<abs(100.0*(pp-p)/p)<<endl;
     //verifyTS();
     //verifyTV();
-    verifyTU();
+    //verifyTU();
+    //verifyTCp();
+    //verifyTCv();
+    //verifyPH();
+    //verifyPS();
+    verifyPV();
+    //verifyPU();
+    //verifyPCp();
     //createFitdata();
     //inflectionPs();
     return 0;
 } 
-
-/*int main(){
-    double p,t,h,s,cp;
-    int i=0;
-    p=3;
-    t=300-273.15;
-    s=IF97Region1::PT2S(p,t);
-    h=IF97Region1::PS2H(p,s);
-    cout<<setprecision(10)<<t<<'\t'<<s<<"\t"<<p<<"\t"<<h<<"\t"<<endl;
-     for(t=5;t<=350;t+=1){
-        p=IF97Region4::T2P(t);
-        for(;p<=100;p+=1){
-            s=IF97Region1::PT2S(p,t);
-            double tt=IF97Region1::PS2T(p,s,i);
-            //cout<<setprecision(10)<<i<<"\t"<<tt<<"\t"<<t<<"\t"<<100.0*(t-tt)/t<<endl;
-        }
-    } 
-    for(t=5;t<350.1;t+=5){
-        p=IF97Region4::T2P(t)+0.00001;
-        double dp=(100-p)/25;
-        while(p<100.1){
-            cp=IF97Region1::PT2Cp(p,t);
-            cout<<setprecision(10)<<p*p<<"\t"<<cp*cp<<"\t"<<p*cp<<"\t"
-                <<p<<"\t"<<cp<<"\t"<<1<<"\t"<<t<<endl;
-            
-        }
-    }
-    return 0; 
-}
-*/
-/* 
-int main(){
-    double p,t,h,s,cp;
-    int i=0;
-    p=3;
-    t=300-273.15;
-    cp=IF97Region1::PT2Cp(p,t);
-    double tt=IF97Region1::PCp2T(p,cp,i);
-    cout<<setprecision(10)<<i<<'\t'<<cp<<"\t"<<p<<"\t"<<tt<<"\t"<<100.0*(t-tt)/t<<endl;
-    for(t=5;t<=350;t+=1){
-        p=IF97Region4::T2P(t);
-        for(;p<=100;p+=1){
-            cp=IF97Region1::PT2Cp(p,t);
-            double tt=IF97Region1::PCp2T(p,cp,i);
-            cout<<setprecision(10)<<i<<"\t"<<p<<"\t"<<t<<"\t"<<100.0*(t-tt)/t<<endl;
-        }
-    }
-    for(t=5;t<350.1;t+=5){
-        p=IF97Region4::T2P(t)+0.00001;
-        double dp=(100-p)/25;
-        while(p<100.1){
-            cp=IF97Region1::PT2Cp(p,t);
-            cout<<setprecision(10)<<p*p<<"\t"<<cp*cp<<"\t"<<p*cp<<"\t"
-                <<p<<"\t"<<cp<<"\t"<<1<<"\t"<<t<<endl;
-            
-        }
-    }
-    return 0;
-} */
-    
-/* int main(){
-    double p,t,h,s,u;
-    p=3;
-    t=500-273.15;
-    u=IF97Region1::PT2U(p,t);
-    double tt=IF97Region1::PU2T(p,u);
-    cout<<setprecision(10)<<u<<"\t"<<p<<"\t"<<tt<<"\t"<<100.0*(t-tt)/t<<endl;
-
-    int i=0;
-    for(t=5;t<=350;t+=1){
-        p=IF97Region4::T2P(t);
-        for(;p<=100;p+=1){
-            u=IF97Region1::PT2U(p,t);
-            //double tt=IF97Region1::PV2T(p,v);
-            double tt=IF97Region1::PU2T(p,u,i);
-            cout<<setprecision(10)<<i<<"\t"<<p<<"\t"<<t<<"\t"<<100.0*(t-tt)/t<<endl;
-        }
-    } 
-}
-
-int main(){
-    double p,t,h,s,v;
-    int i=0;
-    for(t=5;t<=350;t+=1){
-        p=IF97Region4::T2P(t);
-        for(;p<=100;p+=1){
-            v=IF97Region1::PT2V(p,t);
-            //double tt=IF97Region1::PV2T(p,v);
-            double tt=IF97Region1::PV2T(p,v,i);
-            cout<<setprecision(10)<<i<<"\t"<<p<<"\t"<<t<<"\t"<<100.0*(t-tt)/t<<endl;
-        }
-    }
-    p=20.54014805;
-    t=345;
-    v=IF97Region1::PT2V(p,t);
-    double tt=IF97Region1::PV2T(p,v,i);
-    cout<<setprecision(10)<<i<<"\t"<<p<<"\t"<<tt<<"\t"<<100.0*(t-tt)/t<<endl;
-}
-int main(){
-    double p,t,h,s,u,v,cp,cv;
-    cout<<"p\tt\th\ts\tu\tv\tcp\tcv"<<endl;
-    for(t=5;t<350.1;t+=5){
-        p=IF97Region4::T2P(t)+0.00001;
-        double dp=(100-p)/25;
-        while(p<100.1){
-            v=1000*IF97Region1::PT2V(p,t);
-            h=IF97Region1::PT2H(p,t);
-            s=IF97Region1::PT2S(p,t);
-            u=IF97Region1::PT2U(p,t);
-            cp=IF97Region1::PT2Cp(p,t);
-            cv=IF97Region1::PT2Cv(p,t);
-            cout<<setprecision(10)<<p<<"\t"<<t<<"\t"<<h<<"\t"<<s<<"\t"<<u<<"\t"<<v
-                <<"\t"<<cp<<"\t"<<cv<<endl;
-            //cout<<setprecision(10)<<p<<"\t"<<v<<"\t"<<t<<endl;
-            p+=dp;
-        }
-    }
-}
-  */
