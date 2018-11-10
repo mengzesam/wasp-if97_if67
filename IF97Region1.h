@@ -114,6 +114,9 @@ public: //static function: T,Cv to
     static double TCv2U(double t,double Cv);
     static double TCv2Cv(double t,double Cv);
     static double TCv2W(double t,double Cv);
+public: //static function: H,S to 
+    static double HS2P(double h,double s,int& itera);
+    static double HS2P(double h,double s);
 private:
     const static double ERR0;
     const static double ERR;
@@ -134,6 +137,9 @@ private:
     const static double ni_tab8[20];
     const static double Ii_tab8[20];
     const static double Ji_tab8[20];
+    const static double ni_hs2pr1[19];
+    const static double Ii_hs2pr1[19];
+    const static double Ji_hs2pr1[19];
 };
 const double IF97Region1::ERR0=1E-5;
 const double IF97Region1::ERR=1E-7;
@@ -243,4 +249,35 @@ const double IF97Region1::Ii_tab8[20]={//page11 table8
  };
 const double IF97Region1::Ji_tab8[20]={//page11 table8
 			0,1,2,3,11,31,0,1,2,3,12,31,0,1,2,9,31,10,32,32
+ };
+const double IF97Region1::ni_hs2pr1[19]={
+// "Revised Supplementary Release on Backward Equations for Pressure as a
+ // Function of Enthalpy and Entropy p(h,s) for Regions 1 and 2 of the IAPWS
+ // Industrial Formulation 1997 for the Thermodynamic Properties of Water and Steam"
+ // page5 table2
+    -0.691997014660582,
+    -0.183612548787560E2,
+    -0.928332409297335E1,
+     0.659639569909906E2,
+    -0.162060388912024E2,
+     0.450620017338667E3,
+     0.854680678224170E3,
+     0.607523214001162E4,
+     0.326487682621856E2,
+    -0.269408844582931E2,
+    -0.319947848334300E3,
+    -0.928354307043320E3,
+     0.303634537455249E2,
+    -0.650540422444146E2,
+    -0.430991316516130E4,
+    -0.747512324096068E3,
+     0.730000345529245E3,
+     0.114284032569021E4,
+    -0.436407041874559E3
+ };
+const double IF97Region1::Ii_hs2pr1[19]={
+    0,0,0,0,0,0,0,0,1,1,1,1,2,2,2,3,4,4,5
+ };
+const double IF97Region1::Ji_hs2pr1[19]={
+    0,1,2,4,5,6,8,14,0,1,4,6,0,1,10,4,1,4,0
  };
