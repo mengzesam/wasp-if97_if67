@@ -1,7 +1,8 @@
 /*
     reference book:IAPWS R7-97(2012)
 */
-class IF97Region3{
+#include "IF97Base.h"
+class IF97Region3:protected IF97Base{
 private://构造函数为private，禁止实例化IF97Region3
     IF97Region3(){};
 public: //static function: T,V to 
@@ -12,6 +13,40 @@ public: //static function: T,V to
     static double TV2Cp(double t,double v);
     static double TV2Cv(double t,double v);
     static double TV2W(double t,double v);
+public://static function:P,Tto
+    static double T_subreg(double p);
+    static double T3ab(double p);
+    static double T3cd(double p);
+    static double T3ef(double p);
+    static double T3gh(double p);
+    static double T3ij(double p);
+    static double T3jk(double p);
+    static double T3mn(double p);
+    static double T3op(double p);
+    static double T3qu(double p);
+    static double T3rx(double p);
+    static double PT2V3a(double p,double t);
+    static double PT2V3b(double p,double t);
+    static double PT2V3c(double p,double t);
+    static double PT2V3d(double p,double t);
+    static double PT2V3e(double p,double t);
+    static double PT2V3f(double p,double t);
+    static double PT2V3g(double p,double t);
+    static double PT2V3h(double p,double t);
+    static double PT2V3i(double p,double t);
+    static double PT2V3j(double p,double t);
+    static double PT2V3k(double p,double t);
+    static double PT2V3l(double p,double t);
+    static double PT2V3m(double p,double t);
+    static double PT2V3n(double p,double t);
+    static double PT2V3o(double p,double t);
+    static double PT2V3p(double p,double t);
+    static double PT2V3q(double p,double t);
+    static double PT2V3r(double p,double t);
+    static double PT2V3s(double p,double t);
+    static double PT2V3t(double p,double t);
+
+
 public: //static function: P,T to 
     static double PT2H(double p,double t);
     static double PT2S(double p,double t);
@@ -118,26 +153,10 @@ public: //static function: H,S to
     static void HS2PT(double h,double s,double& p,double& t,int& itera);
     static void HS2PT(double h,double s,double& p,double& t);
 private:
-    const static double ERR0;
-    const static double ERR;
-    const static double ERR2;
-    const static double T0;
-    const static double R;
-    const static double Tc;
-    const static double pc;
-    const static double rhoc;
     const static double ni[40];
-    const static double Ii[39];
-    const static double Ji[39];
+    const static int Ii[39];
+    const static int Ji[39];
 };
-const double IF97Region3::ERR0=1E-5;
-const double IF97Region3::ERR=1E-7;
-const double IF97Region3::ERR2=1E-10;
-const double IF97Region3::T0=273.15;
-const double IF97Region3::R=0.461526;//page5 (1)
-const double IF97Region3::Tc=647.096;//page5 (2)
-const double IF97Region3::pc=22.064;//page5 (3)
-const double IF97Region3::rhoc=322;//page5 (4)
 const double IF97Region3::ni[40]={ //page30 table30
 			-0.15732845290239E2,
 			 0.20944396974307E2,
@@ -178,11 +197,11 @@ const double IF97Region3::ni[40]={ //page30 table30
 			 0.80964802996215E-4,
 			-0.16557679795037E-3,
 			-0.44923899061815E-4,
-	0.10658070028513E1
+			 0.10658070028513E1
  };
-const double IF97Region3::Ii[39]={//page30 table30
+const int IF97Region3::Ii[39]={//page30 table30
     0,0,0,0,0,0,0,1,1,1,1,2,2,2,2,2,2,3,3,3,3,3,4,4,4,4,5,5,5,6,6,6,7,8,9,9,10,10,11
  };
-const double IF97Region3::Ji[39]={//page30 table30
+const int IF97Region3::Ji[39]={//page30 table30
     0,1,2,7,10,12,23,2,6,15,17,0,2,6,7,22,26,0,2,4,16,26,0,2,4,26,1,3,26,0,2,26,2,26,2,26,0,1,26
  };
