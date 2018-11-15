@@ -25,6 +25,8 @@ public://static function:P,Tto
     static double T3op(double p);
     static double T3qu(double p);
     static double T3rx(double p);
+    static double T3uv(double p);
+    static double T3wx(double p);
     static double PT2V3a(double p,double t);
     static double PT2V3b(double p,double t);
     static double PT2V3c(double p,double t);
