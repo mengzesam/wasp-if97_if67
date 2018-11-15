@@ -47,6 +47,12 @@ public://static function:P,Tto
     static double PT2V3r(double p,double t);
     static double PT2V3s(double p,double t);
     static double PT2V3t(double p,double t);
+    static double PT2V3u(double p,double t);
+    static double PT2V3v(double p,double t);
+    static double PT2V3w(double p,double t);
+    static double PT2V3x(double p,double t);
+    static double PT2V3y(double p,double t);
+    static double PT2V3z(double p,double t);
 
 
 public: //static function: P,T to 
