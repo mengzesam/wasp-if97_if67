@@ -1643,6 +1643,61 @@ double IF97Region3::PT2V3z(double p,double t){
     }
     return 0.0038*pow(omega,4);
 }
+void IF97Region3::testPT(){
+    double p,t,v,vv;
+    p=50;	t=630-273.15;	v=0.0014708531;	    vv=PT2V3a(p,t);	cout<<setprecision(12)<<"3a"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
+    p=80;	t=670-273.15;	v=0.001503831359;	vv=PT2V3a(p,t);	cout<<setprecision(12)<<"3a"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
+    p=50;	t=710-273.15;	v=0.002204728587;	vv=PT2V3b(p,t);	cout<<setprecision(12)<<"3b"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
+    p=80;	t=750-273.15;	v=0.00197369294;	vv=PT2V3b(p,t);	cout<<setprecision(12)<<"3b"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
+    p=20;	t=630-273.15;	v=0.001761696406;	vv=PT2V3c(p,t);	cout<<setprecision(12)<<"3c"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
+    p=30;	t=650-273.15;	v=0.001819560617;	vv=PT2V3c(p,t);	cout<<setprecision(12)<<"3c"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
+    p=26;	t=656-273.15;	v=0.00224558772;	vv=PT2V3d(p,t);	cout<<setprecision(12)<<"3d"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
+    p=30;	t=670-273.15;	v=0.002506897702;	vv=PT2V3d(p,t);	cout<<setprecision(12)<<"3d"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
+    p=26;	t=661-273.15;	v=0.002970225962;	vv=PT2V3e(p,t);	cout<<setprecision(12)<<"3e"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
+    p=30;	t=675-273.15;	v=0.003004627086;	vv=PT2V3e(p,t);	cout<<setprecision(12)<<"3e"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
+    p=26;	t=671-273.15;	v=0.005019029401;	vv=PT2V3f(p,t);	cout<<setprecision(12)<<"3f"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
+    p=30;	t=690-273.15;	v=0.004656470142;	vv=PT2V3f(p,t);	cout<<setprecision(12)<<"3f"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
+    p=23.6;	t=649-273.15;	v=0.002163198378;	vv=PT2V3g(p,t);	cout<<setprecision(12)<<"3g"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
+    p=24;	t=650-273.15;	v=0.002166044161;	vv=PT2V3g(p,t);	cout<<setprecision(12)<<"3g"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
+    p=23.6;	t=652-273.15;	v=0.002651081407;	vv=PT2V3h(p,t);	cout<<setprecision(12)<<"3h"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
+    p=24;	t=654-273.15;	v=0.002967802335;	vv=PT2V3h(p,t);	cout<<setprecision(12)<<"3h"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
+    p=23.6;	t=653-273.15;	v=0.003273916816;	vv=PT2V3i(p,t);	cout<<setprecision(12)<<"3i"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
+    p=24;	t=655-273.15;	v=0.003550329864;	vv=PT2V3i(p,t);	cout<<setprecision(12)<<"3i"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
+    p=23.5;	t=655-273.15;	v=0.004545001142;	vv=PT2V3j(p,t);	cout<<setprecision(12)<<"3j"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
+    p=24;	t=660-273.15;	v=0.005100267704;	vv=PT2V3j(p,t);	cout<<setprecision(12)<<"3j"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
+    p=23;	t=660-273.15;	v=0.006109525997;	vv=PT2V3k(p,t);	cout<<setprecision(12)<<"3k"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
+    p=24;	t=670-273.15;	v=0.006427325645;	vv=PT2V3k(p,t);	cout<<setprecision(12)<<"3k"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
+    p=22.6;	t=646-273.15;	v=0.002117860851;	vv=PT2V3l(p,t);	cout<<setprecision(12)<<"3l"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
+    p=23;	t=646-273.15;	v=0.002062374674;	vv=PT2V3l(p,t);	cout<<setprecision(12)<<"3l"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
+    p=22.6;	t=648.6-273.15;	v=0.00253306378;	vv=PT2V3m(p,t);	cout<<setprecision(12)<<"3m"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
+    p=22.8;	t=649.3-273.15;	v=0.002572971781;	vv=PT2V3m(p,t);	cout<<setprecision(12)<<"3m"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
+    p=22.6;	t=649-273.15;	v=0.002923432711;	vv=PT2V3n(p,t);	cout<<setprecision(12)<<"3n"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
+    p=22.8;	t=649.7-273.15;	v=0.002913311494;	vv=PT2V3n(p,t);	cout<<setprecision(12)<<"3n"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
+    p=22.6;	t=649.1-273.15;	v=0.003131208996;	vv=PT2V3o(p,t);	cout<<setprecision(12)<<"3o"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
+    p=22.8;	t=649.9-273.15;	v=0.003221160278;	vv=PT2V3o(p,t);	cout<<setprecision(12)<<"3o"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
+    p=22.6;	t=649.4-273.15;	v=0.003715596186;	vv=PT2V3p(p,t);	cout<<setprecision(12)<<"3p"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
+    p=22.8;	t=650.2-273.15;	v=0.00366475479;	vv=PT2V3p(p,t);	cout<<setprecision(12)<<"3p"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
+    p=21.1;	t=640-273.15;	v=0.001970999272;	vv=PT2V3q(p,t);	cout<<setprecision(12)<<"3q"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
+    p=21.8;	t=643-273.15;	v=0.002043919161;	vv=PT2V3q(p,t);	cout<<setprecision(12)<<"3q"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
+    p=21.1;	t=644-273.15;	v=0.005251009921;	vv=PT2V3r(p,t);	cout<<setprecision(12)<<"3r"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
+    p=21.8;	t=648-273.15;	v=0.005256844741;	vv=PT2V3r(p,t);	cout<<setprecision(12)<<"3r"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
+    p=19.1;	t=635-273.15;	v=0.001932829079;	vv=PT2V3s(p,t);	cout<<setprecision(12)<<"3s"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
+    p=20;	t=638-273.15;	v=0.001985387227;	vv=PT2V3s(p,t);	cout<<setprecision(12)<<"3s"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
+    p=17;	t=626-273.15;	v=0.008483262001;	vv=PT2V3t(p,t);	cout<<setprecision(12)<<"3t"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
+    p=20;	t=640-273.15;	v=0.006227528101;	vv=PT2V3t(p,t);	cout<<setprecision(12)<<"3t"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
+    p=21.5;	t=644.6-273.15;	v=2.268366647E-3;	vv=PT2V3u(p,t);	cout<<setprecision(10)<<"3u"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
+    p=22.0;	t=646.1-273.15;	v=2.296350553E-3;	vv=PT2V3u(p,t);	cout<<setprecision(10)<<"3u"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
+    p=22.5;	t=648.6-273.15;	v=2.832373260E-3;	vv=PT2V3v(p,t);	cout<<setprecision(10)<<"3v"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
+    p=22.3;	t=647.9-273.15;	v=2.811424405E-3;	vv=PT2V3v(p,t);	cout<<setprecision(10)<<"3v"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
+    p=22.15;	t=647.5-273.15;	v=3.694032281E-3;	vv=PT2V3w(p,t);	cout<<setprecision(10)<<"3w"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
+    p=22.3;	t=648.1-273.15;	v=3.622226305E-3;	vv=PT2V3w(p,t);	cout<<setprecision(10)<<"3w"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
+    p=22.11;	t=648.0-273.15;	v=4.528072649E-3;	vv=PT2V3x(p,t);	cout<<setprecision(10)<<"3x"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
+    p=22.3;	t=649.0-273.15;	v=4.556905799E-3;	vv=PT2V3x(p,t);	cout<<setprecision(10)<<"3x"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
+    p=22.0;	t=646.84-273.15;	v=2.698354719E-3;	vv=PT2V3y(p,t);	cout<<setprecision(10)<<"3y"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
+    p=22.064;	t=647.05-273.15;	v=2.717655648E-3;	vv=PT2V3y(p,t);	cout<<setprecision(10)<<"3y"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
+    p=22.0;	t=646.89-273.15;	v=3.798732962E-3;	vv=PT2V3z(p,t);	cout<<setprecision(10)<<"3z"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
+    p=22.064;	t=647.15-273.15;	v=3.701940010E-3;	vv=PT2V3z(p,t);	cout<<setprecision(10)<<"3z"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
+}
 /*end*/
 void verifyHS(){
     // double p,t,h,s,pp,tt;
@@ -1670,62 +1725,6 @@ void verifyHS(){
     // }
     // cout<<max<<endl;
 }
-void testPt(){
-    double p,t,v,vv;
-/*    p=50;	t=630-273.15;	v=0.0014708531;	    vv=IF97Region3::PT2V3a(p,t);	cout<<setprecision(12)<<"3a"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
-    p=80;	t=670-273.15;	v=0.001503831359;	vv=IF97Region3::PT2V3a(p,t);	cout<<setprecision(12)<<"3a"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
-    p=50;	t=710-273.15;	v=0.002204728587;	vv=IF97Region3::PT2V3b(p,t);	cout<<setprecision(12)<<"3b"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
-    p=80;	t=750-273.15;	v=0.00197369294;	vv=IF97Region3::PT2V3b(p,t);	cout<<setprecision(12)<<"3b"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
-    p=20;	t=630-273.15;	v=0.001761696406;	vv=IF97Region3::PT2V3c(p,t);	cout<<setprecision(12)<<"3c"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
-    p=30;	t=650-273.15;	v=0.001819560617;	vv=IF97Region3::PT2V3c(p,t);	cout<<setprecision(12)<<"3c"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
-    p=26;	t=656-273.15;	v=0.00224558772;	vv=IF97Region3::PT2V3d(p,t);	cout<<setprecision(12)<<"3d"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
-    p=30;	t=670-273.15;	v=0.002506897702;	vv=IF97Region3::PT2V3d(p,t);	cout<<setprecision(12)<<"3d"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
-    p=26;	t=661-273.15;	v=0.002970225962;	vv=IF97Region3::PT2V3e(p,t);	cout<<setprecision(12)<<"3e"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
-    p=30;	t=675-273.15;	v=0.003004627086;	vv=IF97Region3::PT2V3e(p,t);	cout<<setprecision(12)<<"3e"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
-    p=26;	t=671-273.15;	v=0.005019029401;	vv=IF97Region3::PT2V3f(p,t);	cout<<setprecision(12)<<"3f"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
-    p=30;	t=690-273.15;	v=0.004656470142;	vv=IF97Region3::PT2V3f(p,t);	cout<<setprecision(12)<<"3f"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
-    p=23.6;	t=649-273.15;	v=0.002163198378;	vv=IF97Region3::PT2V3g(p,t);	cout<<setprecision(12)<<"3g"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
-    p=24;	t=650-273.15;	v=0.002166044161;	vv=IF97Region3::PT2V3g(p,t);	cout<<setprecision(12)<<"3g"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
-    p=23.6;	t=652-273.15;	v=0.002651081407;	vv=IF97Region3::PT2V3h(p,t);	cout<<setprecision(12)<<"3h"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
-    p=24;	t=654-273.15;	v=0.002967802335;	vv=IF97Region3::PT2V3h(p,t);	cout<<setprecision(12)<<"3h"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
-    p=23.6;	t=653-273.15;	v=0.003273916816;	vv=IF97Region3::PT2V3i(p,t);	cout<<setprecision(12)<<"3i"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
-    p=24;	t=655-273.15;	v=0.003550329864;	vv=IF97Region3::PT2V3i(p,t);	cout<<setprecision(12)<<"3i"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
-    p=23.5;	t=655-273.15;	v=0.004545001142;	vv=IF97Region3::PT2V3j(p,t);	cout<<setprecision(12)<<"3j"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
-    p=24;	t=660-273.15;	v=0.005100267704;	vv=IF97Region3::PT2V3j(p,t);	cout<<setprecision(12)<<"3j"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
-    p=23;	t=660-273.15;	v=0.006109525997;	vv=IF97Region3::PT2V3k(p,t);	cout<<setprecision(12)<<"3k"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
-    p=24;	t=670-273.15;	v=0.006427325645;	vv=IF97Region3::PT2V3k(p,t);	cout<<setprecision(12)<<"3k"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
-    p=22.6;	t=646-273.15;	v=0.002117860851;	vv=IF97Region3::PT2V3l(p,t);	cout<<setprecision(12)<<"3l"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
-    p=23;	t=646-273.15;	v=0.002062374674;	vv=IF97Region3::PT2V3l(p,t);	cout<<setprecision(12)<<"3l"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
-    p=22.6;	t=648.6-273.15;	v=0.00253306378;	vv=IF97Region3::PT2V3m(p,t);	cout<<setprecision(12)<<"3m"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
-    p=22.8;	t=649.3-273.15;	v=0.002572971781;	vv=IF97Region3::PT2V3m(p,t);	cout<<setprecision(12)<<"3m"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
-    p=22.6;	t=649-273.15;	v=0.002923432711;	vv=IF97Region3::PT2V3n(p,t);	cout<<setprecision(12)<<"3n"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
-    p=22.8;	t=649.7-273.15;	v=0.002913311494;	vv=IF97Region3::PT2V3n(p,t);	cout<<setprecision(12)<<"3n"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
-    p=22.6;	t=649.1-273.15;	v=0.003131208996;	vv=IF97Region3::PT2V3o(p,t);	cout<<setprecision(12)<<"3o"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
-    p=22.8;	t=649.9-273.15;	v=0.003221160278;	vv=IF97Region3::PT2V3o(p,t);	cout<<setprecision(12)<<"3o"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
-    p=22.6;	t=649.4-273.15;	v=0.003715596186;	vv=IF97Region3::PT2V3p(p,t);	cout<<setprecision(12)<<"3p"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
-    p=22.8;	t=650.2-273.15;	v=0.00366475479;	vv=IF97Region3::PT2V3p(p,t);	cout<<setprecision(12)<<"3p"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
-    p=21.1;	t=640-273.15;	v=0.001970999272;	vv=IF97Region3::PT2V3q(p,t);	cout<<setprecision(12)<<"3q"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
-    p=21.8;	t=643-273.15;	v=0.002043919161;	vv=IF97Region3::PT2V3q(p,t);	cout<<setprecision(12)<<"3q"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
-    p=21.1;	t=644-273.15;	v=0.005251009921;	vv=IF97Region3::PT2V3r(p,t);	cout<<setprecision(12)<<"3r"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
-    p=21.8;	t=648-273.15;	v=0.005256844741;	vv=IF97Region3::PT2V3r(p,t);	cout<<setprecision(12)<<"3r"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
-    p=19.1;	t=635-273.15;	v=0.001932829079;	vv=IF97Region3::PT2V3s(p,t);	cout<<setprecision(12)<<"3s"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
-    p=20;	t=638-273.15;	v=0.001985387227;	vv=IF97Region3::PT2V3s(p,t);	cout<<setprecision(12)<<"3s"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
-    p=17;	t=626-273.15;	v=0.008483262001;	vv=IF97Region3::PT2V3t(p,t);	cout<<setprecision(12)<<"3t"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
-    p=20;	t=640-273.15;	v=0.006227528101;	vv=IF97Region3::PT2V3t(p,t);	cout<<setprecision(12)<<"3t"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
-*/
-    p=21.5;	t=644.6-273.15;	v=0.008483262001;	vv=IF97Region3::PT2V3u(p,t);	cout<<setprecision(10)<<"3u"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
-    p=22.0;	t=646.1-273.15;	v=0.006227528101;	vv=IF97Region3::PT2V3u(p,t);	cout<<setprecision(10)<<"3u"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
-    p=22.5;	t=648.6-273.15;	v=0.008483262001;	vv=IF97Region3::PT2V3v(p,t);	cout<<setprecision(10)<<"3v"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
-    p=22.3;	t=647.9-273.15;	v=0.006227528101;	vv=IF97Region3::PT2V3v(p,t);	cout<<setprecision(10)<<"3v"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
-    p=22.15;	t=647.5-273.15;	v=0.008483262001;	vv=IF97Region3::PT2V3w(p,t);	cout<<setprecision(10)<<"3w"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
-    p=22.3;	t=648.1-273.15;	v=0.006227528101;	vv=IF97Region3::PT2V3w(p,t);	cout<<setprecision(10)<<"3w"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
-    p=22.11;	t=648.0-273.15;	v=0.008483262001;	vv=IF97Region3::PT2V3x(p,t);	cout<<setprecision(10)<<"3x"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
-    p=22.3;	t=649.0-273.15;	v=0.006227528101;	vv=IF97Region3::PT2V3x(p,t);	cout<<setprecision(10)<<"3x"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
-    p=22.0;	t=646.84-273.15;	v=0.008483262001;	vv=IF97Region3::PT2V3y(p,t);	cout<<setprecision(10)<<"3y"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
-    p=22.064;	t=647.05-273.15;	v=0.006227528101;	vv=IF97Region3::PT2V3y(p,t);	cout<<setprecision(10)<<"3y"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
-    p=22.0;	t=646.89-273.15;	v=0.008483262001;	vv=IF97Region3::PT2V3z(p,t);	cout<<setprecision(10)<<"3z"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
-    p=22.064;	t=647.15-273.15;	v=0.006227528101;	vv=IF97Region3::PT2V3z(p,t);	cout<<setprecision(10)<<"3z"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
-}
 int main(){ 
     double p,t,h,u,s,v,cp,cv,pp,tt,p2;
     int i;
@@ -1738,6 +1737,6 @@ int main(){
     // cp=IF97Region3::TV2Cp(t,v);
     // cv=IF97Region3::TV2Cv(t,v);
      pp=IF97Region3::TV2W(t,v);  
-    testPt(); 
+    IF97Region3::testPT(); 
     return 0;
 } 

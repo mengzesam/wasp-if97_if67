@@ -13,8 +13,9 @@ public: //static function: T,V to
     static double TV2Cp(double t,double v);
     static double TV2Cv(double t,double v);
     static double TV2W(double t,double v);
-public://static function:P,Tto
-    static double T_subreg(double p);
+public://static function:P,T to
+    static void testPT();
+private://static function:P,T to 辅助函数，根据Supp-VPT3-2016.pdf
     static double T3ab(double p);
     static double T3cd(double p);
     static double T3ef(double p);
