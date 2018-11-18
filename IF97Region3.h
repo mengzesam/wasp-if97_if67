@@ -15,6 +15,7 @@ public: //static function: T,V to
     static double TV2W(double t,double v);
 public://static function:P,T to
     static void testPT();
+    static double PT2V(double p,double t, int& itera);
 private://static function:P,T to 辅助函数，根据Supp-VPT3-2016.pdf
     static double T3ab(double p);
     static double T3cd(double p);
