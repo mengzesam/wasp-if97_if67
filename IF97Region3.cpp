@@ -100,6 +100,109 @@ double IF97Region3::TV2W(double t,double v){
     return 0.0;
 }
 /*P,T 2*/
+double IF97Region3::PT2V(double p,double t,int& itera){
+    double v;
+    if(p>40){ //&& p<=100
+        if(t<=T3ab(p))
+            v=PT2V3a(p,t);
+        else
+            v=PT2V3b(p,t);
+    }else if(p>25){
+        if(t<=T3cd(p))
+            v=PT2V3c(p,t);
+        else if(t<=T3ab(p))
+            v=PT2V3d(p,t);
+        else if(t<=T3ef(p))
+            v=PT2V3e(p,t);
+        else
+            v=PT2V3f(p,t);
+    }else if(p>23.5){
+        if(t<=T3cd(p))
+            v=PT2V3c(p,t);
+        else if(t<=T3gh(p))
+            v=PT2V3g(p,t);
+        else if(t<=T3ef(p))
+            v=PT2V3h(p,t);
+        else if(t<=T3ij(p))
+            v=PT2V3i(p,t);
+        else if(t<=T3jk(p))
+            v=PT2V3j(p,t);
+        else
+            v=PT2V3k(p,t);
+    }else if(p>23){
+        if(t<=T3cd(p))
+            v=PT2V3c(p,t);
+        else if(t<=T3gh(p))
+            v=PT2V3l(p,t);
+        else if(t<=T3ef(p))
+            v=PT2V3h(p,t);
+        else if(t<=T3ij(p))
+            v=PT2V3i(p,t);
+        else if(t<=T3jk(p))
+            v=PT2V3j(p,t);
+        else
+            v=PT2V3k(p,t);
+    }else if(p>22.5){
+        if(t<=T3cd(p))
+            v=PT2V3c(p,t);
+        else if(t<=T3gh(p))
+            v=PT2V3l(p,t);
+        else if(t<=T3mn(p))
+            v=PT2V3m(p,t);
+        else if(t<=T3ef(p))
+            v=PT2V3n(p,t);
+        else if(t<=T3op(p))
+            v=PT2V3o(p,t);
+        else if(t<=T3ij(p))
+            v=PT2V3p(p,t);
+        else if(t<=T3jk(p))
+            v=PT2V3j(p,t);
+        else
+            v=PT2V3k(p,t);
+    }else if(p>T2P(643.15-273.15)){//p>psat97(643.15K)
+        if(t<=T3cd(p))
+            v=PT2V3c(p,t);
+        else if(t<=T3qu(p))
+            v=PT2V3q(p,t);
+        else if(t<=T3jk(p))
+            v=PT2V3r(p,t);
+        else
+            v=PT2V3k(p,t);
+    }else if(p>20.5){
+        if(t<=T3cd(p))
+            v=PT2V3c(p,t);
+        else if(t<=P2T(p))//t<=Tsat97(p)
+            v=PT2V3s(p,t);
+        else if(t<=T3jk(p))
+            v=PT2V3r(p,t);
+        else
+            v=PT2V3k(p,t);
+    }else if(p>19.00881189173929){//p>p3cd
+        if(t<=T3cd(p))
+            v=PT2V3c(p,t);
+        else if(t<=P2T(p))//t<=Tsat97(p)
+            v=PT2V3s(p,t);
+        else
+            v=PT2V3t(p,t);
+    }else{//p>Psat97(623.15K)
+        if(t<=P2T(p))//t<=Tsat97(p)
+            v=PT2V3c(p,t);
+        else
+            v=PT2V3t(p,t);
+    }
+    double tau=Tc/(t+T0);
+    double lefts[39];
+    for(int i =0;i<39;i++){
+        lefts[i]=ni[i]*Ii[i]*pow(tau,Ji[i]);
+    }
+    double delta=1.0/(rhoc*v);
+    double phi_delta=ni[39]/delta;
+    for(int i =0;i<39;i++){
+        phi_delta+=lefts[i]*pow(delta,Ii[i]-1);
+    }
+    double pp=delta*phi_delta*R*(t+T0)/(v*1000.0);
+    return v;    
+}
 double IF97Region3::T3ab(double p){
     double ni[5]={
         0.154793642129415E4,
