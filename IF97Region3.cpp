@@ -219,7 +219,7 @@ double IF97Region3::PT2V(double p,double t,int& itera){
 	    pp=delta*phi_delta*R*(t+T0)/(v*1000.0);
 	    while(abs(p-pp)>ERR){
 		    itera++;
-		    v=v0;
+		    v0=v1;
 		    p0=p1;
 		    v1=v;
 		    p1=pp;  
