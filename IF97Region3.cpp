@@ -201,6 +201,36 @@ double IF97Region3::PT2V(double p,double t,int& itera){
         phi_delta+=lefts[i]*pow(delta,Ii[i]-1);
     }
     double pp=delta*phi_delta*R*(t+T0)/(v*1000.0);
+    itera=0;
+    if(abs(p-pp)>ERR){
+	    double v0=v;
+	    double p0=pp;
+	    double v1=v0+0.001;
+	    delta=1.0/(rhoc*v1);
+	    phi_delta=ni[i]/delta;
+	    for(int i=0;i<39;i++)
+		phi_delta+=lefts[i]*pow(delta,Ii[i]-1);
+	    double p1=delta*phi_delta*R*(t+T0)/(v1*1000.0);
+	    v=v1+(p-p1)/(p1-p0)*(v1-v0);
+	    delta=1.0/(rhoc*v);
+	    phi_delta=ni[i]/delta;
+	    for(int i=0;i<39;i++)
+		phi_delta+=lefts[i]*pow(delta,Ii[i]-1);
+	    pp=delta*phi_delta*R*(t+T0)/(v*1000.0);
+	    while(abs(p-pp)>ERR){
+		    itera++;
+		    v=v0;
+		    p0=p1;
+		    v1=v;
+		    p1=pp;  
+		    v=v1+(p-p1)/(p1-p0)*(v1-v0);
+	            delta=1.0/(rhoc*v);
+	            phi_delta=ni[i]/delta;
+	            for(int i=0;i<39;i++)
+			    phi_delta+=lefts[i]*pow(delta,Ii[i]-1);
+	            pp=delta*phi_delta*R*(t+T0)/(v*1000.0);    
+	    }
+    }
     return v;    
 }
 double IF97Region3::T3ab(double p){
