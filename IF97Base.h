@@ -5,10 +5,10 @@
 class IF97Base{
 protected://构造函数为protected，禁止非子类实例化
     IF97Base(){};
-protected: //static function,region4 Saturation-Pressure/temperature Equation
+public: //static function,region4 Saturation-Pressure/temperature Equation
     static double P2T(double ps);
     static double T2P(double ts);
-protected:
+public:
 	static double T2P_B23(double t);
 	static double P2T_B23(double p);
 protected:

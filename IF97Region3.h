@@ -2,7 +2,7 @@
     reference book:IAPWS R7-97(2012)
 */
 #include "IF97Base.h"
-class IF97Region3:protected IF97Base{
+class IF97Region3:public IF97Base{
 private://构造函数为private，禁止实例化IF97Region3
     IF97Region3(){};
 public: //static function: T,V to 

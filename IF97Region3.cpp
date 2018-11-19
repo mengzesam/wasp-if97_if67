@@ -77,30 +77,13 @@ double IF97Region3::TV2Cv(double t,double v){
 }
 double IF97Region3::TV2W(double t,double v){
     double p;
-    p=T2P_B23(623.15-273.15);
-    t=P2T_B23(16.5291643)+273.15;
-    t=P2T_B23(100)+273.15;
-    p=T2P(300-273.15);
-    p=T2P(500-273.15);
-    p=T2P(600-273.15);
-    t=P2T(0.353658941E-2)+273.15;
-    t=P2T(0.263889776E1)+273.15;
-    t=P2T(0.123443146E2)+273.15;
-    t=T3ab(40)+273.15;
-    t=T3cd(25)+273.15;
-    t=T3ef(40)+273.15;
-    t=T3gh(23)+273.15;
-    t=T3ij(23)+273.15;
-    t=T3jk(23)+273.15;
-    t=T3mn(22.8)+273.15;
-    t=T3op(22.8)+273.15;
-    t=T3qu(22)+273.15;
-    t=T3uv(22.3)+273.15;
-    t=T3wx(22.3)+273.15;
+    
+    t=T2P(643.15-273.15);
     return 0.0;
 }
 /*P,T 2*/
 double IF97Region3::PT2V(double p,double t,int& itera){
+    double err=ERR;
     double v;
     if(p>40){ //&& p<=100
         if(t<=T3ab(p))
@@ -159,11 +142,81 @@ double IF97Region3::PT2V(double p,double t,int& itera){
             v=PT2V3j(p,t);
         else
             v=PT2V3k(p,t);
-    }else if(p>T2P(643.15-273.15)){//p>psat97(643.15K)
+    }else if(p>22.11){
         if(t<=T3cd(p))
             v=PT2V3c(p,t);
         else if(t<=T3qu(p))
             v=PT2V3q(p,t);
+        else if(t<=T3uv(p))
+            v=PT2V3u(p,t);
+        else if(t<=T3ef(p))
+            v=PT2V3v(p,t);
+        else if(t<=T3wx(p))
+            v=PT2V3w(p,t);
+        else if(t<=T3rx(p))
+            v=PT2V3x(p,t);
+        else if(t<=T3jk(p))
+            v=PT2V3r(p,t);
+        else
+            v=PT2V3k(p,t);
+    }else if(p>22.064){
+        if(t<=T3cd(p))
+            v=PT2V3c(p,t);
+        else if(t<=T3qu(p))
+            v=PT2V3q(p,t);
+        else if(t<=T3uv(p))
+            v=PT2V3u(p,t);
+        else if(t<=T3ef(p))
+            v=PT2V3y(p,t);
+        else if(t<=T3wx(p))
+            v=PT2V3z(p,t);
+        else if(t<=T3rx(p))
+            v=PT2V3x(p,t);
+        else if(t<=T3jk(p))
+            v=PT2V3r(p,t);
+        else
+            v=PT2V3k(p,t);
+    }else if(p>21.93161551){//21.93161551==psat97(v=0.00264m3/kg)f
+        if(t<=T3cd(p))
+            v=PT2V3c(p,t);
+        else if(t<=T3qu(p))
+            v=PT2V3q(p,t);
+        else if(t<=T3uv(p))
+            v=PT2V3u(p,t);
+        else if(t<=P2T(p))//<Tsat97(p)
+            v=PT2V3y(p,t);         
+        else if(t<=T3wx(p))
+            v=PT2V3z(p,t);         
+        else if(t<=T3rx(p))
+            v=PT2V3x(p,t);            
+        else if(t<=T3jk(p))
+            v=PT2V3r(p,t);
+        else
+            v=PT2V3k(p,t);
+    }else if(p>21.90096265){//21.90096265==psat97(v=0.00385m3/kg)f
+        if(t<=T3cd(p))
+            v=PT2V3c(p,t);
+        else if(t<=T3qu(p))
+            v=PT2V3q(p,t);
+        else if(t<=P2T(p))//<Tsat97(p)
+            v=PT2V3u(p,t);       
+        else if(t<=T3wx(p))
+            v=PT2V3z(p,t);         
+        else if(t<=T3rx(p))
+            v=PT2V3x(p,t);            
+        else if(t<=T3jk(p))
+            v=PT2V3r(p,t);
+        else
+            v=PT2V3k(p,t);
+    }else if(p>21.04336731897525){//p>psat97(643.15K)
+        if(t<=T3cd(p))
+            v=PT2V3c(p,t);
+        else if(t<=T3qu(p))
+            v=PT2V3q(p,t);
+        else if(t<=P2T(p))//<Tsat97(p)
+            v=PT2V3u(p,t);         
+        else if(t<=T3rx(p))
+            v=PT2V3x(p,t);            
         else if(t<=T3jk(p))
             v=PT2V3r(p,t);
         else
@@ -192,43 +245,43 @@ double IF97Region3::PT2V(double p,double t,int& itera){
     }
     double tau=Tc/(t+T0);
     double lefts[39];
-    for(int i =0;i<39;i++){
+    for(int i=0;i<39;i++){
         lefts[i]=ni[i]*Ii[i]*pow(tau,Ji[i]);
     }
     double delta=1.0/(rhoc*v);
     double phi_delta=ni[39]/delta;
-    for(int i =0;i<39;i++){
+    for(int i=0;i<39;i++){
         phi_delta+=lefts[i]*pow(delta,Ii[i]-1);
     }
     double pp=delta*phi_delta*R*(t+T0)/(v*1000.0);
     itera=0;
-    if(abs(p-pp)>ERR){
+    if(abs(p-pp)>err){
 	    double v0=v;
 	    double p0=pp;
-	    double v1=v0+0.001;
+	    double v1=v0+0.00001;
 	    delta=1.0/(rhoc*v1);
-	    phi_delta=ni[i]/delta;
+	    phi_delta=ni[39]/delta;
 	    for(int i=0;i<39;i++)
 		phi_delta+=lefts[i]*pow(delta,Ii[i]-1);
 	    double p1=delta*phi_delta*R*(t+T0)/(v1*1000.0);
 	    v=v1+(p-p1)/(p1-p0)*(v1-v0);
 	    delta=1.0/(rhoc*v);
-	    phi_delta=ni[i]/delta;
+	    phi_delta=ni[39]/delta;
 	    for(int i=0;i<39;i++)
 		phi_delta+=lefts[i]*pow(delta,Ii[i]-1);
 	    pp=delta*phi_delta*R*(t+T0)/(v*1000.0);
-	    while(abs(p-pp)>ERR){
+	    while(abs(p-pp)>err){
 		    itera++;
 		    v0=v1;
 		    p0=p1;
 		    v1=v;
 		    p1=pp;  
 		    v=v1+(p-p1)/(p1-p0)*(v1-v0);
-	            delta=1.0/(rhoc*v);
-	            phi_delta=ni[i]/delta;
-	            for(int i=0;i<39;i++)
-			    phi_delta+=lefts[i]*pow(delta,Ii[i]-1);
-	            pp=delta*phi_delta*R*(t+T0)/(v*1000.0);    
+            delta=1.0/(rhoc*v);
+            phi_delta=ni[39]/delta;
+            for(int i=0;i<39;i++)
+            phi_delta+=lefts[i]*pow(delta,Ii[i]-1);
+            pp=delta*phi_delta*R*(t+T0)/(v*1000.0);    
 	    }
     }
     return v;    
@@ -1832,44 +1885,33 @@ void IF97Region3::testPT(){
     p=22.064;	t=647.15-273.15;	v=3.701940010E-3;	vv=PT2V3z(p,t);	cout<<setprecision(10)<<"3z"<<"\t"<<v<<"\t"<<vv<<"\t"<<abs(100*(vv-v)/v)<<endl;
 }
 /*end*/
-void verifyHS(){
-    // double p,t,h,s,pp,tt;
-    // int i=0,max=0;
-    // double dp=(100-0.000611657)/200;
-    // for(p=0.000611657;p<=100;p+=dp){
-    //     double maxt=350;
-    //     if(p<=22.064){
-    //         maxt=IF97Region4::P2T(p);
-    //         maxt=maxt>350?350:maxt;
-    //     }
-    //     double dt=maxt/200;
-    //     for(t=0;t<=maxt;t+=dt){
-    //         h=IF97Region3::PT2H(p,t);
-    //         s=IF97Region3::PT2S(p,t);
-    //         IF97Region3::HS2PT(h,s,pp,tt,i);
-    //         if(i>max) max=i;
-    //         cout<<setprecision(10)<<i<<'\t'<<h<<"\t"<<s<<"\t"<<p<<"\t"<<t<<"\t";
-    //         cout<<setprecision(10)<<pp<<'\t'<<tt<<"\t"<<abs(100*(pp-p)/p)<<"\t";
-    //         if(t<1E-9)
-    //             cout<<setprecision(10)<<abs(tt-t)<<endl;
-    //         else
-    //             cout<<setprecision(10)<<abs(100.0*(tt-t)/t)<<endl;
-    //     }
-    // }
-    // cout<<max<<endl;
+void verifyPT(){
+    double p,t,v,pp,tt;
+    int i=0,max=0;
+    double dp=(100-IF97Region3::T2P_B23(350))/500;
+    for(p=IF97Region3::T2P_B23(350);p<=100;p+=dp){
+        double maxt=IF97Region3::P2T_B23(p);
+        double dt=0.1;
+        for(t=350;t<=maxt;t+=dt){
+            v=IF97Region3::PT2V(p,t,i);
+            pp=IF97Region3::TV2P(t,v);
+            if(i>max) max=i;
+            cout<<setprecision(10)<<i<<'\t'<<v<<"\t"<<t<<"\t"<<p<<"\t"<<pp<<"\t";
+            cout<<setprecision(10)<<abs(100*(pp-p)/p)<<"\t"<<endl;
+        }
+    }
+    cout<<max<<endl;
 }
 int main(){ 
-    double p,t,h,u,s,v,cp,cv,pp,tt,p2;
+    double p,t,v,vv,pp;
     int i;
-    // v=1.0/200;
-    // t=650-273.15;
-    // p=IF97Region3::TV2P(t,v);
-    // h=IF97Region3::TV2H(t,v);
-    // u=IF97Region3::TV2U(t,v);
-    // s=IF97Region3::TV2S(t,v);
-    // cp=IF97Region3::TV2Cp(t,v);
-    // cv=IF97Region3::TV2Cv(t,v);
-     pp=IF97Region3::TV2W(t,v);  
-    IF97Region3::testPT(); 
+    v=1.0/200;
+    t=650-273.15;
+    pp=IF97Region3::TV2P(t,v);  
+    vv=IF97Region3::PT2V(21.9547685800,373,i);
+    vv=IF97Region3::PT2V(22.2930643,376.85,i);
+    vv=IF97Region3::PT2V(25.5837018,376.85,i);
+    vv=IF97Region3::PT2V(78.3095639,476.85,i); 
+    verifyPT();
     return 0;
 } 
