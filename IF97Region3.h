@@ -16,6 +16,21 @@ public: //static function: T,V to
 public://static function:P,T to
     static void testPT();
     static double PT2V(double p,double t, int& itera);
+public://static function:P,H to
+    static double PH2T(double p,double h, int& itera);
+public://static function:P,S to
+    static double PS2T(double p,double s, int& itera);
+private:////static function:P,H or P,S to 辅助函数，根据Supp-Tv(ph,ps)3-2014.pdf
+    const static double S3ab; //==Sc
+    static double H3ab(double p);
+    static double PH2T3a(double p,double h);
+    static double PH2T3b(double p,double h);
+    static double PH2V3a(double p,double h);
+    static double PH2V3b(double p,double h);
+    static double PS2T3a(double p,double s);
+    static double PS2T3b(double p,double s);
+    static double PS2V3a(double p,double s);
+    static double PS2V3b(double p,double s);
 private://static function:P,T to 辅助函数，根据Supp-VPT3-2016.pdf
     static double T3ab(double p);
     static double T3cd(double p);
@@ -57,109 +72,7 @@ private://static function:P,T to 辅助函数，根据Supp-VPT3-2016.pdf
     static double PT2V3z(double p,double t);
 
 
-public: //static function: P,T to 
-    static double PT2H(double p,double t);
-    static double PT2S(double p,double t);
-    static double PT2V(double p,double t);
-    static double PT2U(double p,double t);
-    static double PT2Cp(double p,double t);
-    static double PT2Cv(double p,double t);
-    static double PT2W(double p,double t);
-public: //static function: P,H to 
-    static double PH2T(double p,double h,int& itera);
-    static double PH2T(double p,double h);
-    static double PH2S(double p,double h);
-    static double PH2V(double p,double h);
-    static double PH2U(double p,double h);
-    static double PH2Cp(double p,double h);
-    static double PH2Cv(double p,double h);
-    static double PH2W(double p,double h);
-public: //static function: P,S to 
-    static double PS2T(double p,double s,int& itera);
-    static double PS2T(double p,double s);
-    static double PS2H(double p,double s);
-    static double PS2V(double p,double s);
-    static double PS2U(double p,double s);
-    static double PS2Cp(double p,double s);
-    static double PS2Cv(double p,double s);
-    static double PS2W(double p,double s);
-public: //static function: P,V to 
-    static double PV2T(double p,double v,int&);
-    static double PV2T(double p,double v);
-    static double PV2H(double p,double v);
-    static double PV2S(double p,double v);
-    static double PV2U(double p,double v);
-    static double PV2Cp(double p,double v);
-    static double PV2Cv(double p,double v);
-    static double PV2W(double p,double v);
-public: //static function: P,U to 
-    static double PU2T(double p,double u,int&);
-    static double PU2T(double p,double u);
-    static double PU2H(double p,double u);
-    static double PU2S(double p,double u);
-    static double PU2V(double p,double u);
-    static double PU2Cp(double p,double u);
-    static double PU2Cv(double p,double u);
-    static double PU2W(double p,double u);
-public: //static function: P,Cp to 
-        //由于过冷水相同压力下不同温度的Cp相差很小，PCp2T迭代出的t值很难还原回原来的t
-        //不建议采用P，Cp to求其他参数
-    static double PCp2T(double p,double cp,int&);
-    static double PCp2T(double p,double cp);
-    static double PCp2H(double p,double cp);
-    static double PCp2S(double p,double cp);
-    static double PCp2V(double p,double cp);
-    static double PCp2U(double p,double cp);
-    static double PCp2Cv(double p,double cp);
-    static double PCp2W(double p,double cp);
-public: //static function: T,H to 
-    static double TH2P(double t,double h,double& p2, int& itera);
-    static double TH2P(double t,double h,double& p2);
-    static double TH2S(double t,double h);
-    static double TH2V(double t,double h);
-    static double TH2U(double t,double h);
-    static double TH2Cp(double t,double h);
-    static double TH2Cv(double t,double h);
-    static double TH2W(double t,double h);
-public: //static function: T,S to 
-    static double TS2P(double t,double s,double& p2,int& itera);
-    static double TS2P(double t,double s,double& p2);
-    static double TS2H(double t,double s);
-    static double TS2V(double t,double s);
-    static double TS2U(double t,double s);
-    static double TS2Cp(double t,double s);
-    static double TS2Cv(double t,double s);
-    static double TS2W(double t,double s);
 
-public: //static function: T,U to 
-    static double TU2P(double t,double u,double& p2,int& itera);
-    static double TU2P(double t,double u,double& p2);
-    static double TU2P(double t,double u);
-    static double TU2H(double t,double u);
-    static double TU2S(double t,double u);
-    static double TU2V(double t,double u);
-    static double TU2Cp(double t,double u);
-    static double TU2Cv(double t,double u);
-    static double TU2W(double t,double u);
-public: //static function: T,Cp to 
-    static double TCp2P(double t,double Cp,int& itera);
-    static double TCp2P(double t,double Cp);
-    static double TCp2H(double t,double Cp);
-    static double TCp2S(double t,double Cp);
-    static double TCp2V(double t,double Cp);
-    static double TCp2U(double t,double Cp);
-    static double TCp2Cv(double t,double Cp);
-    static double TCp2W(double t,double Cp);
-public: //static function: T,Cv to 
-    static double TCv2P(double t,double Cv,double&p2,int& itera);
-    static double TCv2P(double t,double Cv,double&p2);
-    static double TCv2H(double t,double Cv);
-    static double TCv2S(double t,double Cv);
-    static double TCv2V(double t,double Cv);
-    static double TCv2U(double t,double Cv);
-    static double TCv2Cv(double t,double Cv);
-    static double TCv2W(double t,double Cv);
-public: //static function: H,S to 
     static void HS2PT(double h,double s,double& p,double& t,int& itera);
     static void HS2PT(double h,double s,double& p,double& t);
 private:
@@ -215,3 +128,4 @@ const int IF97Region3::Ii[39]={//page30 table30
 const int IF97Region3::Ji[39]={//page30 table30
     0,1,2,7,10,12,23,2,6,15,17,0,2,6,7,22,26,0,2,4,16,26,0,2,4,26,1,3,26,0,2,26,2,26,2,26,0,1,26
  };
+const double S3ab=4.41202148223476;//==Sc
