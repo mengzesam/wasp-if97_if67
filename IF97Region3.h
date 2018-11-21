@@ -16,10 +16,13 @@ public: //static function: T,V to
 public://static function:P,T to
     static void testPT();
     static double PT2V(double p,double t, int& itera);
+    static double PT2V(double p,double t);
 public://static function:P,H to
-    static double PH2T(double p,double h, int& itera);
+    static void PH2TV(double p,double h,double& t,double& v, int& itera);
+    static void PH2TV(double p,double h,double& t,double& v);
 public://static function:P,S to
-    static double PS2T(double p,double s, int& itera);
+    static void PS2TV(double p,double s,double& t,double& v, int& itera);
+    static void PS2TV(double p,double s,double& t,double& v);
 private:////static function:P,H or P,S to 辅助函数，根据Supp-Tv(ph,ps)3-2014.pdf
     const static double S3ab; //==Sc
     static double H3ab(double p);
@@ -31,6 +34,8 @@ private:////static function:P,H or P,S to 辅助函数，根据Supp-Tv(ph,ps)3-2
     static double PS2T3b(double p,double s);
     static double PS2V3a(double p,double s);
     static double PS2V3b(double p,double s);
+    static double H2P3sat(double h);
+    static double S2P3sat(double s);
 private://static function:P,T to 辅助函数，根据Supp-VPT3-2016.pdf
     static double T3ab(double p);
     static double T3cd(double p);
@@ -128,4 +133,4 @@ const int IF97Region3::Ii[39]={//page30 table30
 const int IF97Region3::Ji[39]={//page30 table30
     0,1,2,7,10,12,23,2,6,15,17,0,2,6,7,22,26,0,2,4,16,26,0,2,4,26,1,3,26,0,2,26,2,26,2,26,0,1,26
  };
-const double S3ab=4.41202148223476;//==Sc
+const double IF97Region3::S3ab=4.41202148223476;//==Sc
