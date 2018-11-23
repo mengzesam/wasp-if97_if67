@@ -3,7 +3,7 @@
 */
 #include "IF97Base.h"
 class IF97Region3:public IF97Base{
-private://构造函数为private，禁止实例化IF97Region3
+private://构造函数为private,禁止实例化IF97Region3
     IF97Region3(){};
 public: //static function: T,V to 
     static double TV2P(double t,double v);
@@ -23,7 +23,12 @@ public://static function:P,H to
 public://static function:P,S to
     static void PS2TV(double p,double s,double& t,double& v, int& itera);
     static void PS2TV(double p,double s,double& t,double& v);
-private:////static function:P,H or P,S to 辅助函数，根据Supp-Tv(ph,ps)3-2014.pdf
+public://static function:H,S to
+    static void HS2TVP(double h,double s,double& t,double& v,double& p,int& itera);
+private://static function:H,S to 辅助函数,根据Supp-phs3-2014.pdf
+    static double HS2P3a(double h,double s);
+    static double HS2P3b(double h,double s);
+private://static function:P,H or P,S to 辅助函数,根据Supp-Tv(ph,ps)3-2014.pdf
     const static double S3ab; //==Sc
     static double H3ab(double p);
     static double PH2T3a(double p,double h);
@@ -36,7 +41,7 @@ private:////static function:P,H or P,S to 辅助函数，根据Supp-Tv(ph,ps)3-2
     static double PS2V3b(double p,double s);
     static double H2P3sat(double h);
     static double S2P3sat(double s);
-private://static function:P,T to 辅助函数，根据Supp-VPT3-2016.pdf
+private://static function:P,T to 辅助函数,根据Supp-VPT3-2016.pdf
     static double T3ab(double p);
     static double T3cd(double p);
     static double T3ef(double p);
