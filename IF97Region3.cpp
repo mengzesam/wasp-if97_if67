@@ -555,6 +555,37 @@ void IF97Region3::PH2TV(double p,double h,double& t,double& v,int& itera){
         }
     //}
 }
+void IF97Region3::PH2TV(double p,double h,double& t,double& v){
+    double err=ERR;
+    if(h<=H3ab(p)){
+        t=PH2T3a(p,h);
+        v=PH2V3a(p,h);
+    }else{
+        t=PH2T3b(p,h);
+        v=PH2V3b(p,h);
+    }
+    double hh=TV2H(t,v);
+    //if(abs(hh-h)>err){ 不要判断，强制进行迭代，因为PH2T/V3a/b得到的t和v算出的hh有时候刚好在err范围内等于h，但不符合的情况
+        double t0=t;
+        double h0=hh;
+        double t1=t0-0.02;
+        t1=t1<350?t0+0.02:t1;
+        v=PT2V(p,t1);
+        double h1=TV2H(t1,v);
+        t=t1+(h-h1)/(h0-h1)*(t0-t1);
+        v=PT2V(p,t);
+        hh=TV2H(t,v);
+        while(abs(hh-h)>err){
+            t0=t1;
+            h0=h1;
+            t1=t;
+            h1=hh;
+            t=t1+(h-h1)/(h0-h1)*(t0-t1);
+            v=PT2V(p,t);
+            hh=TV2H(t,v);
+        }
+    //}
+}
 /*P，S 2*/
 void IF97Region3::PS2TV(double p,double s,double& t,double& v,int& itera){
     double err=ERR;
@@ -589,8 +620,72 @@ void IF97Region3::PS2TV(double p,double s,double& t,double& v,int& itera){
         }
     //}
 }
-/*
-tab3
+void IF97Region3::PS2TV(double p,double s,double& t,double& v){
+    double err=ERR;
+    if(s<=S3ab){
+        t=PS2T3a(p,s);
+        v=PS2V3a(p,s);
+    }else{
+        t=PS2T3b(p,s);
+        v=PS2V3b(p,s);
+    }
+    double ss=TV2S(t,v);
+    //if(abs(ss-s)>err){ 不要判断，强制进行迭代，因为PS2T/V3a/b得到的t和v算出的ss有时候刚好在err范围内等于s，但不符合的情况
+        double t0=t;
+        double s0=ss;
+        double t1=t0-0.2;
+        t1=t1<350?t0+0.2:t1;
+        v=PT2V(p,t1);
+        double s1=TV2S(t1,v);
+        t=t1+(s-s1)/(s0-s1)*(t0-t1);
+        v=PT2V(p,t);
+        ss=TV2S(t,v);
+        while(abs(ss-s)>err){
+            t0=t1;
+            s0=s1;
+            t1=t;
+            s1=ss;
+            t=t1+(s-s1)/(s0-s1)*(t0-t1);
+            v=PT2V(p,t);
+            ss=TV2S(t,v);
+        }
+    //}
+}
+/*H,S 2*/
+void IF97Region3::HS2TVP(double h,double s,double& t,double& v, double& p,int& itera){    
+    double err=ERR;
+    if(s<=S3ab){
+        p=HS2P3a(h,s);
+    }else{
+        p=HS2P3b(h,s);
+    }
+    PS2TV(p,s,t,v);
+    double hh=TV2H(t,v);
+    itera=0;
+    if(abs(hh-h)>err){
+        double p0=p;
+        double h0=hh;
+        double p1=(p+0.1)>100?p-0.1:p+0.1;
+        PS2TV(p1,s,t,v);
+        double h1=TV2H(t,v);
+        p=p1+(h-h1)/(h0-h1)*(p0-p1);
+        PS2TV(p,s,t,v);
+        hh=TV2H(t,v);
+        while(abs(hh-h)>err && itera<10){//p=97.506048,t=374.1对应的h，s输入时，不能收敛需要优化
+            itera++;
+            p0=p1;
+            h0=h1;
+            p1=p;
+            h1=hh;
+            p=p1+(h-h1)/(h0-h1)*(p0-p1);
+            PS2TV(p,s,t,v);
+            hh=TV2H(t,v);
+        }
+    }
+    //p=TV2P(t,v);
+}
+/*H,S 2* 辅助函数*/
+double IF97Region3::HS2P3a(double h,double s){
     double ni[33]={
       0.770889828326934E1,
      -0.260835009128688E2,
@@ -634,6 +729,69 @@ tab3
         0,1,5,0,3,4,8,14,6,16,0,2,3,0,1,4,5,28,28,
         24,1,32,36,22,28,36,16,28,36,16,36,10,28
     };
+    double eta=h/2300.0;
+    double sigma=s/4.4;
+    double pi=0;
+    for(int i=0;i<33;i++){
+        pi+=ni[i]*pow(eta-1.01,Ii[i])*pow(sigma-0.750,Ji[i]);
+    }
+    return 99.0*pi;
+}
+double IF97Region3::HS2P3b(double h,double s){
+    double ni[35]={
+      0.125244360717979E-12,
+     -0.126599322553713E-1,
+      0.506878030140626E1,
+      0.317847171154202E2,
+     -0.391041161399932E6,
+     -0.975733406392044E-10,
+     -0.186312419488279E2,
+      0.510973543414101E3,
+      0.373847005822362E6,
+      0.299804024666572E-7,
+      0.200544393820342E2,
+     -0.498030487662829E-5,
+     -0.102301806360030E2,
+      0.552819126990325E2,
+     -0.206211367510878E3,
+     -0.794012232324823E4,
+      0.782248472028153E1,
+     -0.586544326902468E2,
+      0.355073647696481E4,
+     -0.115303107290162E-3,
+     -0.175092403171802E1,
+      0.257981687748160E3,
+     -0.727048374179467E3,
+      0.121644822609198E-3,
+      0.393137871762692E-1,
+      0.704181005909296E-2,
+     -0.829108200698110E2,
+     -0.265178818131250,
+      0.137531682453991E2,
+     -0.522394090753046E2,
+      0.240556298941048E4,
+     -0.227361631268929E5,
+      0.890746343932567E5,
+     -0.239234565822486E8,
+      0.568795808129714E10
+    };
+    int Ii[35]={
+        -12,-12,-12,-12,-12,-10,-10,-10,-10,-8,-8,-6,-6,-6,-6,
+        -5,-4,-4,-4,-3,-3,-3,-3,-2,-2,-1,0,2,2,5,6,8,10,14,14
+    };
+    int Ji[35]={
+        2,10,12,14,20,2,10,14,18,2,8,2,6,7,8,
+        10,4,5,8,1,3,5,6,0,1,0,3,0,1,0,1,1,1,3,7
+    };
+    double eta=h/2800.0;
+    double sigma=s/5.3;
+    double reciproca_pi=0;
+    for(int i=0;i<35;i++){
+        reciproca_pi+=ni[i]*pow(eta-0.681,Ii[i])*pow(sigma-0.792,Ji[i]);
+    }
+    return 16.6/reciproca_pi;
+}
+/*
 tab4
     double ni[35]={
       0.125244360717979E-12,
@@ -3045,15 +3203,41 @@ void verifyPS(){
     }
     cout<<max<<endl;
 }
+void verifyHS(){
+    double p,t,v,h,s,vv,tt,pp;
+    int i=0,max=0;
+    double dp=(100-22.064)/500;
+    for(p=22.064;p<=100;p+=dp){
+        double maxt=IF97Region3::P2T_B23(p);
+        double dt=0.1;
+        for(t=350;t<=maxt;t+=dt){
+            v=IF97Region3::PT2V(p,t,i);
+            h=IF97Region3::TV2H(t,v);
+            s=IF97Region3::TV2S(t,v);
+            IF97Region3::HS2TVP(h,s,tt,vv,pp,i);
+            if(i>max) max=i;
+            cout<<setprecision(10)<<i<<'\t'<<v<<"\t"<<vv<<"\t"<<abs((vv-v))<<"\t";
+            cout<<setprecision(10)<<p<<"\t"<<pp<<"\t"<<abs(pp-p)<<"\t";
+            cout<<setprecision(10)<<t<<"\t"<<tt<<"\t"<<abs((tt-t))<<endl;
+        }
+    }
+    cout<<max<<endl;
+}
 int main(){ 
-    double p,t,v,h,s,vv,pp;
+    double p,t,v,h,s,tt,vv,pp;
     int i;
     v=1.0/200;
     t=650-273.15;
     pp=IF97Region3::TV2P(t,v);  
     //verifyPT();
-    verifyPH();
+    //verifyPH();
     //verifyPS();
-    //IF97Region3::PS2TV(22.531616,4.051877471,t,v,i);
+    p=97.506048;
+    t=374.1;
+    v=IF97Region3::PT2V(p,t,i);
+    h=IF97Region3::TV2H(t,v);
+    s=IF97Region3::TV2S(t,v);
+    IF97Region3::HS2TVP(h,s,tt,vv,pp,i);
+    verifyHS();
     return 0;
 } 
