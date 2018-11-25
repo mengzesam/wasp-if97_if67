@@ -652,7 +652,91 @@ void IF97Region3::PS2TV(double p,double s,double& t,double& v){
     //}
 }
 /*H,S 2*/
-void IF97Region3::HS2TVP(double h,double s,double& t,double& v, double& p,int& itera){    
+void IF97Region3::HS2TVP(double h,double s,double& t,double& v, double& p,int& itera){ 
+    double err=ERR;
+    if(s<=S3ab){
+        p=HS2P3a(h,s);
+    }else{
+        p=HS2P3b(h,s);
+    }
+    PS2TV(p,s,t,v);
+    double hh=TV2H(t,v);
+    itera=0;
+    if(abs(hh-h)>err){
+        double t0=t;
+        double h0=hh;
+        double t1=(t-0.1)<=350?t+0.1:t-0.1;
+        double ss=TV2S(t1,v);
+        if(abs(ss-s)>err){
+            double v0=v;
+            double s0=ss;
+            double v1=v+0.0001;
+            double s1=TV2S(t1,v1);
+            v=v1+(s-s1)/(s0-s1)*(v0-v1);
+            ss=TV2S(t1,v);
+            while(abs(ss-s)>err && itera<40){
+                itera++;
+                v0=v1;
+                s0=s1;
+                v1=v;
+                s1=ss;
+                v=v1+(s-s1)/(s0-s1)*(v0-v1);
+                ss=TV2S(t1,v);
+            }
+        }
+        double h1=TV2H(t1,v);
+        t=t1+(h-h1)/(h0-h1)*(t0-t1);
+        ss=TV2S(t,v);
+        if(abs(ss-s)>err){
+            double v0=v;
+            double s0=ss;
+            double v1=v+0.0001;
+            double s1=TV2S(t,v1);
+            v=v1+(s-s1)/(s0-s1)*(v0-v1);
+            ss=TV2S(t,v);
+            while(abs(ss-s)>err  && itera<40){
+                itera++;
+                v0=v1;
+                s0=s1;
+                v1=v;
+                s1=ss;
+                v=v1+(s-s1)/(s0-s1)*(v0-v1);
+                ss=TV2S(t,v);
+            }
+        }
+        hh=TV2H(t,v);
+        while(abs(hh-h)>err && itera<40){//p=97.506048,t=374.1对应的h，s输入时，不能收敛需要优化
+            itera++;
+            t0=t1;
+            h0=h1;
+            t1=t;
+            h1=hh;
+            t=t1+(h-h1)/(h0-h1)*(t0-t1);
+            ss=TV2S(t,v);
+            if(abs(ss-s)>err){
+                itera++;
+                double v0=v;
+                double s0=ss;
+                double v1=v+0.0001;
+                double s1=TV2S(t,v1);
+                v=v1+(s-s1)/(s0-s1)*(v0-v1);
+                ss=TV2S(t,v);
+                while(abs(ss-s)>err  && itera<40){
+                    v0=v1;
+                    s0=s1;
+                    v1=v;
+                    s1=ss;
+                    v=v1+(s-s1)/(s0-s1)*(v0-v1);
+                    ss=TV2S(t,v);
+                }
+            }
+            hh=TV2H(t,v);
+        }
+    }
+    p=TV2P(t,v);
+}
+void IF97Region3::HS2TVP(double h,double s,double& t,double& v, double& p){ 
+    int itera; 
     double err=ERR;
     if(s<=S3ab){
         p=HS2P3a(h,s);
@@ -3203,13 +3287,13 @@ void verifyPS(){
     }
     cout<<max<<endl;
 }
-void verifyHS(){
+void verifyHS(double p0,double p1,int divs){
     double p,t,v,h,s,vv,tt,pp;
     int i=0,max=0;
-    double dp=(100-22.064)/500;
-    for(p=22.064;p<=100;p+=dp){
+    double dp=(p1-p0)/divs;
+    for(p=p0;p<=p1+0.000001;p+=dp){
         double maxt=IF97Region3::P2T_B23(p);
-        double dt=0.1;
+        double dt=0.01;
         for(t=350;t<=maxt;t+=dt){
             v=IF97Region3::PT2V(p,t,i);
             h=IF97Region3::TV2H(t,v);
@@ -3223,21 +3307,32 @@ void verifyHS(){
     }
     cout<<max<<endl;
 }
-int main(){ 
+int main(int argc, char *argv[]){ 
     double p,t,v,h,s,tt,vv,pp;
     int i;
-    v=1.0/200;
-    t=650-273.15;
-    pp=IF97Region3::TV2P(t,v);  
-    //verifyPT();
-    //verifyPH();
-    //verifyPS();
-    p=97.506048;
+    // v=1.0/200;
+    // t=650-273.15;
+    // pp=IF97Region3::TV2P(t,v);  
+    // //verifyPT();
+    // //verifyPH();
+    // //verifyPS();
+    p=97.506048;    
     t=374.1;
     v=IF97Region3::PT2V(p,t,i);
     h=IF97Region3::TV2H(t,v);
     s=IF97Region3::TV2S(t,v);
     IF97Region3::HS2TVP(h,s,tt,vv,pp,i);
-    verifyHS();
+    if(argc==4){        
+        double p0=atof(argv[1]);
+        double p1=atof(argv[2]);
+        int divs=atoi(argv[3]);
+        time_t start_t, end_t;
+        double diff_t;
+        time(&start_t);
+        verifyHS(p0,p1,divs);
+        time(&end_t);
+        diff_t = difftime(end_t, start_t);
+        cout<<"duration:"<<diff_t<<endl;
+    }
     return 0;
 } 
