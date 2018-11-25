@@ -25,6 +25,7 @@ public://static function:P,S to
     static void PS2TV(double p,double s,double& t,double& v);
 public://static function:H,S to
     static void HS2TVP(double h,double s,double& t,double& v,double& p,int& itera);
+    static void HS2TVP(double h,double s,double& t,double& v,double& p);
 private://static function:H,S to 辅助函数,根据Supp-phs3-2014.pdf
     static double HS2P3a(double h,double s);
     static double HS2P3b(double h,double s);
