@@ -16,8 +16,12 @@ public: //static function: P,T to
 public: //TODO:static function: P,T to  for metastable-vapor region
 public://static function:P,H to
 	static double PH2T(double p,double h,int& itera);
+	static double PH2T(double p,double h);
 public://static function:P,S to
-	static double PS2T(double p,double h,int& itera);
+	static double PS2T(double p,double s,int& itera);
+	static double PS2T(double p,double s);
+public://static function:H,S to
+	static void HS2PT(double h,double s,double& p,double& t,int& itera);
 private://static function:P,H or P,S to 辅助函数
 	const static double S2bc;
 	static double P2bc(double h);
@@ -28,6 +32,11 @@ private://static function:P,H or P,S to 辅助函数
 	static double PS2T2a(double p,double s);
 	static double PS2T2b(double p,double s);
 	static double PS2T2c(double p,double s);
+private://static function:H,S to 辅助函数
+	static double H2ab(double s);
+	static double HS2P2a(double h,double s);
+	static double HS2P2b(double h,double s);
+	static double HS2P2c(double h,double s);
 private:
     const static double ni_tab10[9];
     const static int Ji_tab10[9];

@@ -184,6 +184,80 @@ double IF97Region2::PH2T(double p,double h,int& itera){
     }
     return t;
 }
+double IF97Region2::PH2T(double p,double h){
+    double err=ERR;
+    double pi=p/1.0;
+    double left0[9];
+    for(int i=0;i<9;i++){
+        left0[i]=ni_tab10[i]*Ji_tab10[i];
+    }
+    double leftr[43];    
+    for(int i=0;i<43;i++){
+        leftr[i]=ni_tab11[i]*pow(pi,Ii_tab11[i])*Ji_tab11[i];//*pow(tau-0.5,Ji_tab11[i]-1);
+    }
+    double t;
+    if(p<=4){
+        t=PH2T2a(p,h);
+    }else if(h>=H2bc(p)){
+        t=PH2T2b(p,h);
+    }else{
+        t=PH2T2c(p,h);
+    }
+    double tau=540.0/(t+T0);
+    double gamma0_tau=0;
+    for(int i=0;i<9;i++){
+        gamma0_tau+=left0[i]*pow(tau,Ji_tab10[i]-1);
+    }
+    double gammar_tau=0;    
+    for(int i=0;i<43;i++){
+        gammar_tau+=leftr[i]*pow(tau-0.5,Ji_tab11[i]-1);
+    }
+    double hh=tau*(gamma0_tau+gammar_tau)*(t+T0)*R;
+    if(abs(hh-h)>err){
+        double t0=t;
+        double h0=hh;
+        double t1=t+0.1>800.0?t-0.1:t+0.1;
+        tau=540.0/(t1+T0);
+        gamma0_tau=0;
+        for(int i=0;i<9;i++){
+            gamma0_tau+=left0[i]*pow(tau,Ji_tab10[i]-1);
+        }
+        gammar_tau=0;    
+        for(int i=0;i<43;i++){
+            gammar_tau+=leftr[i]*pow(tau-0.5,Ji_tab11[i]-1);
+        }
+        double h1=tau*(gamma0_tau+gammar_tau)*(t1+T0)*R;
+        t=t1+(h-h1)/(h0-h1)*(t0-t1);
+        tau=540.0/(t+T0);
+        gamma0_tau=0;
+        for(int i=0;i<9;i++){
+            gamma0_tau+=left0[i]*pow(tau,Ji_tab10[i]-1);
+        }
+        gammar_tau=0;    
+        for(int i=0;i<43;i++){
+            gammar_tau+=leftr[i]*pow(tau-0.5,Ji_tab11[i]-1);
+        }
+        hh=tau*(gamma0_tau+gammar_tau)*(t+T0)*R;
+        while(abs(hh-h)>err){
+            t0=t1;
+            h0=h1;
+            t1=t;
+            h1=hh;
+            t=t1+(h-h1)/(h0-h1)*(t0-t1);
+            tau=540.0/(t+T0);
+            gamma0_tau=0;
+            for(int i=0;i<9;i++){
+                gamma0_tau+=left0[i]*pow(tau,Ji_tab10[i]-1);
+            }
+            gammar_tau=0;    
+            for(int i=0;i<43;i++){
+                gammar_tau+=leftr[i]*pow(tau-0.5,Ji_tab11[i]-1);
+            }
+            hh=tau*(gamma0_tau+gammar_tau)*(t+T0)*R;
+        }
+    }
+    return t;
+}
 double IF97Region2::PS2T(double p,double s,int& itera){
     double err=ERR2;
     double pi=p/1.0;
@@ -274,6 +348,129 @@ double IF97Region2::PS2T(double p,double s,int& itera){
         }
     }
     return t;
+}
+double IF97Region2::PS2T(double p,double s){
+    double err=ERR2;
+    double pi=p/1.0;
+    double lnpi=log(pi);  
+    double left[43];
+    double left_tau[43];    
+    for(int i=0;i<43;i++){
+        left[i]=ni_tab11[i]*pow(pi,Ii_tab11[i]);//*pow(tau-0.5,Ji_tab11[i]);
+        left_tau[i]=ni_tab11[i]*pow(pi,Ii_tab11[i])*Ji_tab11[i];//*pow(tau-0.5,Ji_tab11[i]-1);
+    }
+    double t;
+    if(p<=4){
+        t=PS2T2a(p,s);
+    }else if(s>=S2bc){
+        t=PS2T2b(p,s);
+    }else{
+        t=PS2T2c(p,s);
+    }
+    double tau=540.0/(t+T0);
+    double gamma0=lnpi;
+    double gamma0_tau=0;    
+    for(int i=0;i<9;i++){
+        gamma0+=ni_tab10[i]*pow(tau,Ji_tab10[i]);
+        gamma0_tau+=ni_tab10[i]*Ji_tab10[i]*pow(tau,Ji_tab10[i]-1);
+    }
+    double gammar=0;
+    double gammar_tau=0;       
+    for(int i=0;i<43;i++){
+        gammar+=left[i]*pow(tau-0.5,Ji_tab11[i]);
+        gammar_tau+=left_tau[i]*pow(tau-0.5,Ji_tab11[i]-1);
+    }
+    double ss=(tau*(gamma0_tau+gammar_tau)-(gamma0+gammar))*R;
+    if(abs(ss-s)>err){
+        double t0=t;
+        double s0=ss;
+        double t1=t+0.1>800.0?t-0.1:t+0.1;
+        tau=540.0/(t1+T0);
+        gamma0=lnpi;
+        gamma0_tau=0;    
+        for(int i=0;i<9;i++){
+            gamma0+=ni_tab10[i]*pow(tau,Ji_tab10[i]);
+            gamma0_tau+=ni_tab10[i]*Ji_tab10[i]*pow(tau,Ji_tab10[i]-1);
+        }
+        gammar=0;
+        gammar_tau=0;       
+        for(int i=0;i<43;i++){
+            gammar+=left[i]*pow(tau-0.5,Ji_tab11[i]);
+            gammar_tau+=left_tau[i]*pow(tau-0.5,Ji_tab11[i]-1);
+        }
+        double s1=(tau*(gamma0_tau+gammar_tau)-(gamma0+gammar))*R;
+        t=t1+(s-s1)/(s0-s1)*(t0-t1);
+        tau=540.0/(t+T0);
+        gamma0=lnpi;
+        gamma0_tau=0;    
+        for(int i=0;i<9;i++){
+            gamma0+=ni_tab10[i]*pow(tau,Ji_tab10[i]);
+            gamma0_tau+=ni_tab10[i]*Ji_tab10[i]*pow(tau,Ji_tab10[i]-1);
+        }
+        gammar=0;
+        gammar_tau=0;       
+        for(int i=0;i<43;i++){
+            gammar+=left[i]*pow(tau-0.5,Ji_tab11[i]);
+            gammar_tau+=left_tau[i]*pow(tau-0.5,Ji_tab11[i]-1);
+        }
+        ss=(tau*(gamma0_tau+gammar_tau)-(gamma0+gammar))*R;
+        while(abs(ss-s)>err){
+            t0=t1;
+            s0=s1;
+            t1=t;
+            s1=ss;
+            t=t1+(s-s1)/(s0-s1)*(t0-t1);
+            tau=540.0/(t+T0);
+            gamma0=lnpi;
+            gamma0_tau=0;    
+            for(int i=0;i<9;i++){
+                gamma0+=ni_tab10[i]*pow(tau,Ji_tab10[i]);
+                gamma0_tau+=ni_tab10[i]*Ji_tab10[i]*pow(tau,Ji_tab10[i]-1);
+            }
+            gammar=0;
+            gammar_tau=0;       
+            for(int i=0;i<43;i++){
+                gammar+=left[i]*pow(tau-0.5,Ji_tab11[i]);
+                gammar_tau+=left_tau[i]*pow(tau-0.5,Ji_tab11[i]-1);
+            }
+            ss=(tau*(gamma0_tau+gammar_tau)-(gamma0+gammar))*R;
+        }
+    }
+    return t;
+}
+void IF97Region2::HS2PT(double h,double s,double& p,double& t,int& itera){
+    double err=ERR;
+    if(h<=H2ab(s)){
+        p=HS2P2a(h,s);
+    }else if(s>=S2bc){
+        p=HS2P2b(h,s);
+    }else{
+        p=HS2P2c(h,s);
+    }
+    t=PH2T(p,h);
+    double hh=PT2H(p,t);
+    double ss=PT2S(p,t);
+    itera=0;
+    if(abs(hh-h)>err || abs(ss-s)>err){
+        double p0=p;
+        double h0=hh;
+        double p1=p-0.005<0?p+0.005:p-0.005;//TODO：还要判断是否落入3区或1区
+        t=PS2T(p1,s);
+        double h1=PT2H(p1,t);
+        p=p1+(h-h1)/(h0-h1)*(p0-p1);
+        t=PS2T(p,s);
+        hh=PT2H(p,t);
+        while(abs(hh-h)>err){
+            itera++;
+            p0=p1;
+            h0=h1;
+            p1=p;
+            h1=hh;
+            p=p1+(h-h1)/(h0-h1)*(p0-p1);
+            t=PS2T(p,s);
+            hh=PT2H(p,t);
+        }
+    }    
 }
 /*P,H or P,S 辅助函数 */
 double IF97Region2::P2bc(double h){
@@ -611,6 +808,166 @@ double IF97Region2::PS2T2c(double p,double s){
     } 
     return 1*theta-T0;
 }
+/*H,S to辅助函数 */
+double IF97Region2::H2ab(double s){
+    double sigma=s/1.0;
+    double eta=-0.349898083432139E4+0.257560716905876E4*sigma
+            -0.421073558227969E3*sigma*sigma+0.276349063799944E2*sigma*sigma*sigma;
+    return 1.0*eta;
+}
+double IF97Region2::HS2P2a(double h,double s){
+    double ni[29]={
+     -0.182575361923032E-1,
+     -0.125229548799536,
+      0.592290437320145,
+      0.604769706185122E1,
+      0.238624965444474E3,
+     -0.298639090222922E3,
+      0.512250813040750E-1,
+     -0.437266515606486,
+      0.413336902999504,
+     -0.516468254574773E1,
+     -0.557014838445711E1,
+      0.128555037824400E2,
+      0.114144108953200E2,
+     -0.119504225652714E3,
+     -0.284777985961560E4,
+      0.431757846408006E4,
+      0.112894040802650E1,
+      0.197409186206319E4,
+      0.151612444706087E4,
+      0.141324451421235E-1,
+      0.585501282219601,
+     -0.297258075863012E1,
+      0.594567314847319E1,
+     -0.623656565798905E4,
+      0.965986235133332E4,
+      0.681500934948134E1,
+     -0.633207286824489E4,
+     -0.558919224465760E1,
+      0.400645798472063E-1
+    };
+    int Ii[29]={
+        0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,
+        1,2,2,2,3,3,3,3,3,4,5,5,6,7
+    };
+    int Ji[29]={
+        1,3,6,16,20,22,0,1,2,3,5,6,10,16,20,
+        22,3,16,20,0,2,3,6,16,16,3,16,3,1
+    };
+    double eta=h/4200.0;
+    double sigma=s/12.0;
+    double pi=0;
+    for(int i=0;i<29;i++){
+        pi+=ni[i]*pow(eta-0.5,Ii[i])*pow(sigma-1.2,Ji[i]);
+    }
+    pi=pi*pi*pi*pi;
+    return 4.0*pi;
+}
+double IF97Region2::HS2P2b(double h,double s){
+    double ni[33]={
+      0.801496989929495E-1,
+     -0.543862807146111,
+      0.337455597421283,
+      0.890555451157450E1,
+      0.313840736431485E3,
+      0.797367065977789,
+     -0.121616973556240E1,
+      0.872803386937477E1,
+     -0.169769781757602E2,
+     -0.186552827328416E3,
+      0.951159274344237E5,
+     -0.189168510120494E2,
+     -0.433407037194840E4,
+      0.543212633012715E9,
+      0.144793408386013,
+      0.128024559637516E3,
+     -0.672309534071268E5,
+      0.336972380095287E8,
+     -0.586634196762720E3,
+     -0.221403224769889E11,
+      0.171606668708389E4,
+     -0.570817595806302E9,
+     -0.312109693178482E4,
+     -0.207841384633010E7,
+      0.305605946157786E13,
+      0.322157004314333E4,
+      0.326810259797295E12,
+     -0.144104158934487E4,
+      0.410694867802600E3,
+      0.109077066873024E12,
+     -0.247964654258893E14,
+      0.188801906865134E10,
+     -0.123651009018773E15
+    };
+    int Ii[33]={
+        0,0,0,0,0,1,1,1,1,1,1,2,2,2,3,3,3,
+        3,4,4,5,5,6,6,6,7,7,8,8,8,8,12,14
+    };
+    int Ji[33]={
+        0,1,2,4,8,0,1,2,3,5,12,1,6,18,0,1,7,12,
+        1,16,1,12,1,8,18,1,16,1,3,14,18,10,16
+    };
+    double eta=h/4100.0;
+    double sigma=s/7.9;
+    double pi=0;
+    for(int i=0;i<33;i++){
+        pi+=ni[i]*pow(eta-0.6,Ii[i])*pow(sigma-1.01,Ji[i]);
+    }
+    pi=pi*pi*pi*pi;
+    return 100.0*pi;
+}
+double IF97Region2::HS2P2c(double h,double s){
+    double ni[31]={
+      0.112225607199012,
+     -0.339005953606712E1,
+     -0.320503911730094E2,
+     -0.197597305104900E3,
+     -0.407693861553446E3,
+      0.132943775222331E5,
+      0.170846839774007E1,
+      0.373694198142245E2,
+      0.358144365815434E4,
+      0.423014446424664E6,
+     -0.751071025760063E9,
+      0.523446127607898E2,
+     -0.228351290812417E3,
+     -0.960652417056937E6,
+     -0.807059292526074E8,
+      0.162698017225669E13,
+      0.772465073604171,
+      0.463929973837746E5,
+     -0.137317885134128E8,
+      0.170470392630512E13,
+     -0.251104628187308E14,
+      0.317748830835520E14,
+      0.538685623675312E2,
+     -0.553089094625169E5,
+     -0.102861522421405E7,
+      0.204249418756234E13,
+      0.273918446626977E9,
+     -0.263963146312685E16,
+     -0.107890854108088E10,
+     -0.296492620980124E11,
+     -0.111754907323424E16
+    };
+    int Ii[31]={
+        0,0,0,0,0,0,1,1,1,1,1,2,2,2,2,2,3,
+        3,3,3,3,4,5,5,5,5,6,6,10,12,16
+    };
+    int Ji[31]={
+        0,1,2,3,4,8,0,2,5,8,14,2,3,7,10,18,0,
+        5,8,16,18,18,1,4,6,14,8,18,7,7,10
+    };
+    double eta=h/3500.0;
+    double sigma=s/5.9;
+    double pi=0;
+    for(int i=0;i<31;i++){
+        pi+=ni[i]*pow(eta-0.7,Ii[i])*pow(sigma-1.1,Ji[i]);
+    }
+    pi=pi*pi*pi*pi;
+    return 100.0*pi;
+}
 int main(){ 
     double p,t,h,u,s,v,cp,cv,pp,tt,p2;
     int i;
@@ -622,14 +979,23 @@ int main(){
     // u=IF97Region2::PT2U(p,t);
     // cp=IF97Region2::PT2Cp(p,t);
     // cv=IF97Region2::PT2Cv(p,t);
-    p=0.0035;
-    s=8.52238967;  
-    t=IF97Region2::PS2T(p,s,i);
-    p=0.0035;
-    s=10.1749996;  
-    t=IF97Region2::PS2T(p,s,i);
-    p=30;
-    s=5.17540298;  
-    t=IF97Region2::PS2T(p,s,i);     
+    // p=0.0035;
+    // s=8.52238967;  
+    // t=IF97Region2::PS2T(p,s,i);
+    // p=0.0035;
+    // s=10.1749996;  
+    // t=IF97Region2::PS2T(p,s,i);
+    // p=30;
+    // s=5.17540298;  
+    // t=IF97Region2::PS2T(p,s,i);  
+    h=2549.91145;
+    s=8.52238967;     
+    IF97Region2::HS2PT(h,s,p,t,i); 
+    h=3335.68375;
+    s=10.1749996;     
+    IF97Region2::HS2PT(h,s,p,t,i); 
+    h=2631.49474;
+    s=5.17540298;     
+    IF97Region2::HS2PT(h,s,p,t,i); 
     return 0;
 } 
