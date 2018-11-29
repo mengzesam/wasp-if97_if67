@@ -20,6 +20,24 @@ public://static function:P,H to
 public://static function:P,S to
 	static double PS2T(double p,double s,int& itera);
 	static double PS2T(double p,double s);
+public://static function:P,V to
+	static double PV2T(double p,double v,int & itera);
+public://static function:P,U to
+	static double PU2T(double p,double u,int & itera);
+public://static function:P,Cp to
+	static double PCp2T(double p,double cp,int & itera);
+public://static function:P,Cv to
+	static double PCv2T(double p,double cv,int & itera);
+public://static function:T,H to
+	static double TH2P(double t,double h,int & itera);
+public://static function:T,S to
+	static double TS2P(double t,double s,int & itera);
+public://static function:T,V to
+	static double TV2P(double t,double v,int & itera);
+public://static function:T,Cp to
+	static double TCp2P(double t,double ch,int & itera);
+public://static function:T,Cv to
+	static double TCv2P(double t,double cv,int & itera);
 public://static function:H,S to
 	static void HS2PT(double h,double s,double& p,double& t,int& itera);
 private://static function:P,H or P,S to 辅助函数

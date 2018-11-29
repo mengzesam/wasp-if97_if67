@@ -5,7 +5,13 @@
 #include <stdlib.h>
 #include <time.h>
 using namespace std;
-
+/* IF97 page17
+*In addition to the properties in the stable single-phase vapor region, 
+*Eq. (15) also yields reasonable values in the metastable-vapor region 
+*for pressures above 10 MPa. Equation (15) is not valid in the metastable-vapor 
+*region at pressures p <= 10 MPa; for this part of the
+*metastable-vapor region see Section 6.2.
+*/
 double IF97Region2::PT2H(double p,double t){
     double pi=p/1.0;
     double tau=540.0/(t+T0);
@@ -32,8 +38,9 @@ double IF97Region2::PT2S(double p,double t){
     double gammar=0;
     double gammar_tau=0;
     for(int i=0;i<43;i++){
-        gammar+=ni_tab11[i]*pow(pi,Ii_tab11[i])*pow(tau-0.5,Ji_tab11[i]);
-        gammar_tau+=ni_tab11[i]*pow(pi,Ii_tab11[i])*Ji_tab11[i]*pow(tau-0.5,Ji_tab11[i]-1);
+        double tmp=pow(pi,Ii_tab11[i]);
+        gammar+=ni_tab11[i]*tmp*pow(tau-0.5,Ji_tab11[i]);
+        gammar_tau+=ni_tab11[i]*tmp*Ji_tab11[i]*pow(tau-0.5,Ji_tab11[i]-1);
     }
     double s=(tau*(gamma0_tau+gammar_tau)-(gamma0+gammar))*R;
     return s;
@@ -438,6 +445,479 @@ double IF97Region2::PS2T(double p,double s){
     }
     return t;
 }
+double IF97Region2::PV2T(double p,double v,int& itera){
+    double err=ERR2;
+    double pi=p/1.0;
+    double lefts[43];
+    for(int i=0;i<43;i++) {
+        lefts[i]=ni_tab11[i]*Ii_tab11[i]*pow(pi,Ii_tab11[i]-1);
+    }
+    double t,tL;
+    if(p<16.5291642526){
+        tL=P2T(p);
+    }else{
+        tL=P2T_B23(p);
+    }
+    t=(tL+800.0)/2;
+    double tau=540.0/(t+T0);
+    double gamma0_pi=1/pi;
+    double gammar_pi=0;
+    for(int i=0;i<43;i++) {
+        gammar_pi+=lefts[i]*pow(tau-0.5,Ji_tab11[i]);
+    }
+	double vv=(pi*(gamma0_pi+gammar_pi))*(t+T0)*R/(p*1000);
+    itera=0;
+    if(abs(vv-v)>err){
+        double t0=t;
+        double v0=vv;
+        double t1;
+        if(v>vv){
+            t1=(t+800)/2.0;
+        }else{
+            t1=(t+tL)/2.0;
+        }
+        tau=540.0/(t1+T0);
+        gammar_pi=0;
+        for(int i=0;i<43;i++) {
+            gammar_pi+=lefts[i]*pow(tau-0.5,Ji_tab11[i]);
+        }
+        double v1=(pi*(gamma0_pi+gammar_pi))*(t1+T0)*R/(p*1000);
+        t=t1+(v-v1)/(v0-v1)*(t0-t1);
+        if(t<tL)
+            t=tL;
+        else if(t>800)
+            t=800;
+        tau=540.0/(t+T0);
+        gammar_pi=0;
+        for(int i=0;i<43;i++) {
+            gammar_pi+=lefts[i]*pow(tau-0.5,Ji_tab11[i]);
+        }
+        vv=(pi*(gamma0_pi+gammar_pi))*(t+T0)*R/(p*1000);
+        while(abs(vv-v)>err){
+            itera++;
+            t0=t1;
+            v0=v1;
+            t1=t;
+            v1=vv;
+            t=t1+(v-v1)/(v0-v1)*(t0-t1);
+            if(t<tL)
+                t=tL;
+            else if(t>800)
+                t=800;
+            tau=540.0/(t+T0);
+            gammar_pi=0;
+            for(int i=0;i<43;i++) {
+                gammar_pi+=lefts[i]*pow(tau-0.5,Ji_tab11[i]);
+            }
+            vv=(pi*(gamma0_pi+gammar_pi))*(t+T0)*R/(p*1000);            
+        }
+    }
+    return t;    
+}
+double IF97Region2::PU2T(double p,double u,int& itera){
+    double err=ERR;
+    double pi=p/1.0;
+    double lefts_pi[43];
+    double lefts_tau[43];
+    for(int i=0;i<43;i++){
+        lefts_pi[i]=ni_tab11[i]*Ii_tab11[i]*pow(pi,Ii_tab11[i]-1);
+        lefts_tau[i]=ni_tab11[i]*pow(pi,Ii_tab11[i])*Ji_tab11[i];
+    }
+    double t,tL;
+    if(p<16.5291642526){
+        tL=P2T(p);
+    }else{
+        tL=P2T_B23(p);
+    }
+    t=(tL+800.0)/2;
+    double tau=540.0/(t+T0);
+    double gamma0_pi=1/pi;
+    double gamma0_tau=0;
+    for(int i=0;i<9;i++){
+        gamma0_tau+=ni_tab10[i]*Ji_tab10[i]*pow(tau,Ji_tab10[i]-1);
+    }
+    double gammar_pi=0;    
+    double gammar_tau=0;    
+    for(int i=0;i<43;i++){
+        gammar_pi+=lefts_pi[i]*pow(tau-0.5,Ji_tab11[i]);
+        gammar_tau+=lefts_tau[i]*pow(tau-0.5,Ji_tab11[i]-1);
+    }
+	double uu=(tau*(gamma0_tau+gammar_tau)-pi*(gamma0_pi+gammar_pi))*(t+T0)*R;
+    itera=0;
+    if(abs(uu-u)>err){
+        double t0=t;
+        double u0=uu;
+        double t1;
+        if(u>uu){
+            t1=(t+800)/2.0;
+        }else{
+            t1=(t+tL)/2.0;
+        }
+        tau=540.0/(t1+T0);
+        gamma0_tau=0;
+        for(int i=0;i<9;i++){
+            gamma0_tau+=ni_tab10[i]*Ji_tab10[i]*pow(tau,Ji_tab10[i]-1);
+        }
+        gammar_pi=0;    
+        gammar_tau=0;    
+        for(int i=0;i<43;i++){
+            gammar_pi+=lefts_pi[i]*pow(tau-0.5,Ji_tab11[i]);
+            gammar_tau+=lefts_tau[i]*pow(tau-0.5,Ji_tab11[i]-1);
+        }
+        double u1=(tau*(gamma0_tau+gammar_tau)-pi*(gamma0_pi+gammar_pi))*(t1+T0)*R;
+        t=t1+(u-u1)/(u0-u1)*(t0-t1);        
+        if(t<tL)
+            t=tL;
+        else if(t>800)
+            t=800;
+        tau=540.0/(t+T0);
+        gamma0_tau=0;
+        for(int i=0;i<9;i++){
+            gamma0_tau+=ni_tab10[i]*Ji_tab10[i]*pow(tau,Ji_tab10[i]-1);
+        }
+        gammar_pi=0;    
+        gammar_tau=0;    
+        for(int i=0;i<43;i++){
+            gammar_pi+=lefts_pi[i]*pow(tau-0.5,Ji_tab11[i]);
+            gammar_tau+=lefts_tau[i]*pow(tau-0.5,Ji_tab11[i]-1);
+        }
+        uu=(tau*(gamma0_tau+gammar_tau)-pi*(gamma0_pi+gammar_pi))*(t+T0)*R;
+        while(abs(uu-u)>err){
+            itera++;
+            t0=t1;
+            u0=u1;
+            t1=t;
+            u1=uu;
+            t=t1+(u-u1)/(u0-u1)*(t0-t1);            
+            if(t<tL)
+                t=tL+1;
+            else if(t>800)
+                t=800-1;
+            tau=540.0/(t+T0);
+            gamma0_tau=0;
+            for(int i=0;i<9;i++){
+                gamma0_tau+=ni_tab10[i]*Ji_tab10[i]*pow(tau,Ji_tab10[i]-1);
+            }
+            gammar_pi=0;    
+            gammar_tau=0;    
+            for(int i=0;i<43;i++){
+                gammar_pi+=lefts_pi[i]*pow(tau-0.5,Ji_tab11[i]);
+                gammar_tau+=lefts_tau[i]*pow(tau-0.5,Ji_tab11[i]-1);
+            }
+            uu=(tau*(gamma0_tau+gammar_tau)-pi*(gamma0_pi+gammar_pi))*(t+T0)*R;           
+        }
+    }
+    return t;    
+}
+double IF97Region2::PCp2T(double p,double cp,int& itera){
+//TODO:cp-p图上的有些等温线上不是单调，后期需优化
+    double err=ERR2;
+    double pi=p/1.0;
+    double lefts[43];
+    for(int i=0;i<43;i++){
+        lefts[i]=ni_tab11[i]*pow(pi,Ii_tab11[i])*Ji_tab11[i]*(Ji_tab11[i]-1);
+    }
+    double t,tL;
+    if(p<16.5291642526){
+        tL=P2T(p);
+    }else{
+        tL=P2T_B23(p);
+    }
+    t=(tL+800.0)/2;
+    double tau=540.0/(t+T0);
+    double gamma0_tau2=0;
+    for(int i=0;i<9;i++){
+        gamma0_tau2+=ni_tab10[i]*Ji_tab10[i]*(Ji_tab10[i]-1)*pow(tau,Ji_tab10[i]-2);
+    }
+    double gammar_tau2=0;
+    for(int i=0;i<43;i++){
+        gammar_tau2+=lefts[i]*pow(tau-0.5,Ji_tab11[i]-2);
+    }
+	double cpcp=(-tau*tau*(gamma0_tau2+gammar_tau2))*R; 
+    itera=0;
+    if(abs(cpcp-cp)>err){
+        double t0=t;
+        double cp0=cpcp;
+        double t1;
+        if(cp>cpcp){
+            t1=(t+tL)/2.0;
+        }else{
+            t1=(t+800)/2.0;
+        }
+        tau=540.0/(t1+T0);
+        gamma0_tau2=0;
+        for(int i=0;i<9;i++){
+            gamma0_tau2+=ni_tab10[i]*Ji_tab10[i]*(Ji_tab10[i]-1)*pow(tau,Ji_tab10[i]-2);
+        }
+        gammar_tau2=0;
+        for(int i=0;i<43;i++){
+            gammar_tau2+=lefts[i]*pow(tau-0.5,Ji_tab11[i]-2);
+        }
+        double cp1=(-tau*tau*(gamma0_tau2+gammar_tau2))*R;
+        t=t1+(cp-cp1)/(cp0-cp1)*(t0-t1);                  
+        if(t<tL)
+            t=tL;
+        else if(t>800)
+            t=800;
+        tau=540.0/(t+T0);
+        gamma0_tau2=0;
+        for(int i=0;i<9;i++){
+            gamma0_tau2+=ni_tab10[i]*Ji_tab10[i]*(Ji_tab10[i]-1)*pow(tau,Ji_tab10[i]-2);
+        }
+        gammar_tau2=0;
+        for(int i=0;i<43;i++){
+            gammar_tau2+=lefts[i]*pow(tau-0.5,Ji_tab11[i]-2);
+        }
+        cpcp=(-tau*tau*(gamma0_tau2+gammar_tau2))*R;
+        while(abs(cpcp-cp)>err){
+            itera++;
+            t0=t1;
+            cp0=cp1;
+            t1=t;
+            cp1=cpcp;
+            t=t1+(cp-cp1)/(cp0-cp1)*(t0-t1);               
+            if(t<tL)
+                t=tL+1;
+            else if(t>800)
+                t=800-1;
+            tau=540.0/(t+T0);
+            gamma0_tau2=0;
+            for(int i=0;i<9;i++){
+                gamma0_tau2+=ni_tab10[i]*Ji_tab10[i]*(Ji_tab10[i]-1)*pow(tau,Ji_tab10[i]-2);
+            }
+            gammar_tau2=0;
+            for(int i=0;i<43;i++){
+                gammar_tau2+=lefts[i]*pow(tau-0.5,Ji_tab11[i]-2);
+            }
+            cpcp=(-tau*tau*(gamma0_tau2+gammar_tau2))*R;          
+        }
+    }
+    return t;    
+}
+double IF97Region2::PCv2T(double p,double cv,int& itera){
+//TODO:cv-p图上的有些等温线上不是单调，后期需优化
+    double err=ERR2;
+    double t,tL;
+    if(p<16.5291642526){
+        tL=P2T(p);
+    }else{
+        tL=P2T_B23(p);
+    }
+    t=(tL+800.0)/2;
+    double cvcv=PT2Cv(p,t);
+    itera=0;
+    if(abs(cvcv-cv)>err){
+        double t0=t;
+        double cv0=cvcv;
+        double t1;
+        if(cv>cvcv){
+            t1=(t+tL)/2.0;
+        }else{
+            t1=(t+800)/2.0;
+        }
+        double cv1=PT2Cv(p,t1);
+        t=t1+(cv-cv1)/(cv0-cv1)*(t0-t1);                       
+        if(t<tL)
+            t=tL;
+        else if(t>800)
+            t=800;
+        cvcv=PT2Cv(p,t);
+        while(abs(cvcv-cv)>err){
+            itera++;
+            t0=t1;
+            cv0=cv1;
+            t1=t;
+            cv1=cvcv;
+            t=t1+(cv-cv1)/(cv0-cv1)*(t0-t1);               
+            if(t<tL)
+                t=tL;
+            else if(t>800)
+                t=800;
+            cvcv=PT2Cv(p,t);         
+        }
+    }
+    return t;    
+}
+double IF97Region2::TH2P(double t,double h,int& itera){
+    double err=ERR;  
+    //206.21151503041943,1.8881957734475048,1.4221208778250582
+    if(abs(h-2500.8928597343438)<err) return 0.0;//at 0.000611Mpa,0C 
+    double tau=540.0/(t+T0);
+    double gamma0_tau=0;
+    for(int i=0;i<9;i++){
+        gamma0_tau+=ni_tab10[i]*Ji_tab10[i]*pow(tau,Ji_tab10[i]-1);
+    }
+    double lefts[43];
+    for(int i=0;i<43;i++){
+        lefts[i]=ni_tab11[i]*Ji_tab11[i]*pow(tau-0.5,Ji_tab11[i]-1);
+    }    
+    double p,pU;
+    if(t<=350){
+        pU=T2P(t);
+    }else if(t<=590){
+        pU=T2P_B23(t);
+    }else{
+        pU=100.0;
+    }
+    p=(0.000611+pU)/2.0;
+    double pi=p/1.0;
+    double gammar_tau=0;
+    for(int i=0;i<43;i++){
+        gammar_tau+=lefts[i]*pow(pi,Ii_tab11[i]);
+    }    
+    double hh=tau*(gamma0_tau+gammar_tau)*(t+T0)*R;
+    itera=0;
+    if(abs(hh-h)>err){
+        double p0=p;
+        double h0=hh;
+        double p1;
+        if(h>hh){
+            p1=(0.000611+p)/2.0;
+        }else{
+            p1=(p+pU)/2.0;
+        }
+        pi=p1/1.0;
+        gammar_tau=0;
+        for(int i=0;i<43;i++){
+            gammar_tau+=lefts[i]*pow(pi,Ii_tab11[i]);
+        }    
+        double h1=tau*(gamma0_tau+gammar_tau)*(t+T0)*R;
+        p=p1+(h-h1)/(h0-h1)*(p0-p1);
+        if(p<0.000611)
+            p=0.000611;
+        else if(p>pU)
+            p=pU;
+        pi=p/1.0;
+        gammar_tau=0;
+        for(int i=0;i<43;i++){
+            gammar_tau+=lefts[i]*pow(pi,Ii_tab11[i]);
+        }    
+        hh=tau*(gamma0_tau+gammar_tau)*(t+T0)*R;
+        while(abs(hh-h)>err){
+            itera++;
+            p0=p1;
+            h0=h1;
+            p1=p;
+            h1=hh;
+            p=p1+(h-h1)/(h0-h1)*(p0-p1);
+            if(p<0.000611)
+                p=0.000611;
+            else if(p>pU)
+                p=pU;
+            pi=p/1.0;
+            gammar_tau=0;
+            for(int i=0;i<43;i++){
+                gammar_tau+=lefts[i]*pow(pi,Ii_tab11[i]);
+            }    
+            hh=tau*(gamma0_tau+gammar_tau)*(t+T0)*R;
+        }        
+    }
+    return p;
+}
+double IF97Region2::TS2P(double t,double s,int& itera){
+    double err=ERR;
+    if(abs(s-9.1559208113668618)<err) return 0.0;//at 0.000611Mpa,0C  
+    double tau=540.0/(t+T0);
+    double gamma0=0;
+    double gamma0_tau=0;
+    for(int i=0;i<9;i++){
+        gamma0+=ni_tab10[i]*pow(tau,Ji_tab10[i]);
+        gamma0_tau+=ni_tab10[i]*Ji_tab10[i]*pow(tau,Ji_tab10[i]-1);
+    }
+    double lefts[43];
+    double lefts_tau[43];
+    for(int i=0;i<43;i++){
+        lefts[i]=ni_tab11[i]*pow(tau-0.5,Ji_tab11[i]);//*pow(pi,Ii_tab11[i]);
+        lefts_tau[i]=ni_tab11[i]*Ji_tab11[i]*pow(tau-0.5,Ji_tab11[i]-1);
+    }
+    double p,pU;
+    if(t<=350){
+        pU=T2P(t);
+    }else if(t<=590){
+        pU=T2P_B23(t);
+    }else{
+        pU=100.0;
+    }
+    double pi=p/1.0;
+    double gammar=0;
+    double gammar_tau=0;
+    for(int i=0;i<43;i++){
+        double tmp=pow(pi,Ii_tab11[i]);
+        gammar+=lefts[i]*tmp;
+        gammar_tau+=lefts_tau[i]*tmp;
+    }
+    double ss=(tau*(gamma0_tau+gammar_tau)-((gamma0+log(pi))+gammar))*R;
+    itera=0;
+    if(abs(ss-s)>err){
+        double p0=p;
+        double s0=ss;
+        double p1;
+        if(s>ss){
+            p1=(0.000611+p)/2.0;
+        }else{
+            p1=(p+pU)/2.0;
+        }
+        pi=p1/1.0;
+        gammar=0;
+        gammar_tau=0;
+        for(int i=0;i<43;i++){
+            double tmp=pow(pi,Ii_tab11[i]);
+            gammar+=lefts[i]*tmp;
+            gammar_tau+=lefts_tau[i]*tmp;
+        }
+        double s1=(tau*(gamma0_tau+gammar_tau)-((gamma0+log(pi))+gammar))*R;
+        p=p1+(s-s1)/(s0-s1)*(p0-p1);
+        if(p<0.000611)
+            p=0.000611;
+        else if(p>pU)
+            p=pU;
+        pi=p/1.0;
+        gammar=0;
+        gammar_tau=0;
+        for(int i=0;i<43;i++){
+            double tmp=pow(pi,Ii_tab11[i]);
+            gammar+=lefts[i]*tmp;
+            gammar_tau+=lefts_tau[i]*tmp;
+        }
+        ss=(tau*(gamma0_tau+gammar_tau)-((gamma0+log(pi))+gammar))*R;
+        while(abs(ss-s)>err){
+            itera++;
+            p0=p1;
+            s0=s1;
+            p1=p;
+            s1=ss;
+            p=p1+(s-s1)/(s0-s1)*(p0-p1);
+            if(p<0.000611)
+                p=0.000611;
+            else if(p>pU)
+                p=pU;
+            pi=p/1.0;
+            gammar=0;
+            gammar_tau=0;
+            for(int i=0;i<43;i++){
+                double tmp=pow(pi,Ii_tab11[i]);
+                gammar+=lefts[i]*tmp;
+                gammar_tau+=lefts_tau[i]*tmp;
+            }
+            ss=(tau*(gamma0_tau+gammar_tau)-((gamma0+log(pi))+gammar))*R;
+        }
+    }
+    return p;
+}
+double IF97Region2::TV2P(double t,double v,int& itera){
+    double p;
+    return p;
+}
+double IF97Region2::TCp2P(double t,double cp,int& itera){
+    double p;
+    return p;
+}
+double IF97Region2::TCv2P(double t,double cv,int& itera){
+    double p;
+    return p;
+}
+
+
 void IF97Region2::HS2PT(double h,double s,double& p,double& t,int& itera){
     double err=ERR;
     if(h<=H2ab(s)){
@@ -971,31 +1451,15 @@ double IF97Region2::HS2P2c(double h,double s){
 int main(){ 
     double p,t,h,u,s,v,cp,cv,pp,tt,p2;
     int i;
-    p=30;
+    p=0.0035;
     t=700-273.15;
-    // h=IF97Region2::PT2H(p,t);
-    // s=IF97Region2::PT2S(p,t);
-    // v=IF97Region2::PT2V(p,t);
-    // u=IF97Region2::PT2U(p,t);
-    // cp=IF97Region2::PT2Cp(p,t);
-    // cv=IF97Region2::PT2Cv(p,t);
-    // p=0.0035;
-    // s=8.52238967;  
-    // t=IF97Region2::PS2T(p,s,i);
-    // p=0.0035;
-    // s=10.1749996;  
-    // t=IF97Region2::PS2T(p,s,i);
-    // p=30;
-    // s=5.17540298;  
-    // t=IF97Region2::PS2T(p,s,i);  
-    h=2549.91145;
-    s=8.52238967;     
-    IF97Region2::HS2PT(h,s,p,t,i); 
-    h=3335.68375;
-    s=10.1749996;     
-    IF97Region2::HS2PT(h,s,p,t,i); 
-    h=2631.49474;
-    s=5.17540298;     
-    IF97Region2::HS2PT(h,s,p,t,i); 
+    h=IF97Region2::PT2H(p,t);
+    s=IF97Region2::PT2S(p,t);
+    v=IF97Region2::PT2V(p,t);
+    u=IF97Region2::PT2U(p,t);
+    cp=IF97Region2::PT2Cp(p,t);
+    cv=IF97Region2::PT2Cv(p,t);
+    p=IF97Region2::TH2P(t,h,i);
+    p=IF97Region2::TS2P(t,s,i);
     return 0;
 } 
