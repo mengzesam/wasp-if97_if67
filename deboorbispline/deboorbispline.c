@@ -77,10 +77,14 @@ int csurfit(float x[],float y[],float z[],int m,float** tx,int* nx,
         int lwrk1=u*v*(2+b1+b2)+2*(u+v+km*(m+ne)+ne-kx-ky)+b2+10;
         int lwrk2=u*v*(b2+1)+b2+10;       
         int kwrk=m+(nxest-2*kx-1)*(nyest-2*ky-1)+10;
+        /* int pause;
+        printf("%d:%d:%d\n",lwrk1,lwrk2,kwrk);
+        scanf("%d",&pause); */
         float* wrk1=(float*)malloc(sizeof(float)*lwrk1);  
         float* wrk2=(float*)malloc(sizeof(float)*lwrk2); 
         int* iwrk=(int*)malloc(sizeof(int)*kwrk); 
         int ier;
+        //scanf("%d",&pause);
         surfit_(&iopt,&m,x,y,z,w,&xb,&xe,
                 &yb,&ye,&kx,&ky,&s,&nxest,&nyest,&nmax,
                 &eps,nx,txx,ny,tyy,cc,&fp,
@@ -102,6 +106,7 @@ int csurfit(float x[],float y[],float z[],int m,float** tx,int* nx,
         free(wrk1);
         free(wrk2);
         free(iwrk);
+        //scanf("%d",&pause);
         return ier;
 }
 void cbspl(float t[],int n,int k,float x,int idx,float h[6]){
