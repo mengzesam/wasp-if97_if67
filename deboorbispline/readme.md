@@ -1,5 +1,5 @@
 
-cbspl cbspl and cbisp function are bivariate b-spline functions, they base on fpbspl.f and fpbisp.f
+csurfit, cbspl and cbisp function are bivariate b-spline functions, they base on surfit.f, fpbspl.f and fpbisp.f
 *which were programmed by Prof. P. Dierckx and are re-written with cpp.
 *surfit_ is c interface function of surfit.f
 *fpbspl.f and fpbisp.f author:
