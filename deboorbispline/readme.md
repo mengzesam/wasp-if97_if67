@@ -11,3 +11,6 @@ cbspl cbspl and cbisp function are bivariate b-spline functions, they base on fp
 *please refer to http://www.netlib.org/dierckx/index.html for details
 *Re-written by:
         mengzesen<mengzesam@126.com>
+
+c and fortran sources compiling:
+gcc cfile1.c cfile2 ffile1.f ffile2.f -o out.exe
