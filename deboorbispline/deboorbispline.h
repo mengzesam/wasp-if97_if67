@@ -27,6 +27,10 @@ extern void surfit_(int* iopt,int* m,float x[],float y[],float z[],float w[],flo
     int ier=csurfit(x,y,z,m,&tx,&nx,&ty,&ny,&c,&nc);
     calling process is respone for free tx,ty and c
 */
+#ifdef __cplusplus 
+extern "C" {
+#endif
+
 int csurfit(float x[],float y[],float z[],int m,float** tx,int* nx,
             float** ty,int* ny,float** c,int* nc);
     
@@ -54,5 +58,7 @@ void cbspl(float t[],int n,int k,float x,int idx,float h[6]);
 float cbisp(float tx[],int nx,float ty[],int ny,float c[],int nc,int kx,int ky,
             float x,float y,int* errFlag);
     
-   
+#ifdef __cplusplus 
+}
+#endif   
 
