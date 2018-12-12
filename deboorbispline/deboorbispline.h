@@ -57,6 +57,10 @@ void cbspl(float t[],int n,int k,float x,int idx,float h[6]);
 */   
 float cbisp(float tx[],int nx,float ty[],int ny,float c[],int nc,int kx,int ky,
             float x,float y,int* errFlag);
+//cbisp and cbspl of double type 
+void cbspl_db(double t[],int n,int k,double x,int idx,double h[6]);
+double cbisp_db(double tx[],int nx,double ty[],int ny,double c[],int nc,int kx,int ky,
+            double x,double y,int* errFlag);
     
 #ifdef __cplusplus 
 }
