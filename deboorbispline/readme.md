@@ -30,3 +30,8 @@ csurfit, cbspl and cbisp function are bivariate b-spline functions, they base on
 c and fortran sources compiling:
 
 gcc cfile1.c cfile2 ffile1.f ffile2.f -o out.exe
+
+There are two library files:deboorbispline.o and bisurfit.o,which are compiled with -O2
+
+In cpp,you can combine them with your application by means of:
+g++ bisurfit.o deboorbispline.o  yourcppfile.cpp -o yourapplication.out(or exe)
