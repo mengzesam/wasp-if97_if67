@@ -133,10 +133,11 @@ double IF97Base::bfit_cbisp(double tx[],int nx,double ty[],int ny,double c[],int
     *
     *NOTE:kx,ky<=5
     */
+   double err=1E-5;
     double z=0.0;
     errFlag=0;
-    double tb=tx[kx];
-    double te=tx[nx-kx-1];
+    double tb=tx[kx]-err;
+    double te=tx[nx-kx-1]+err;
     double arg=x;
     int idx=kx;
     if(arg<tb){
@@ -153,8 +154,8 @@ double IF97Base::bfit_cbisp(double tx[],int nx,double ty[],int ny,double c[],int
     double hx[6];
     int xidx=idx;
     bfit_cbspl(tx,nx,kx,arg,idx,hx);
-    tb=ty[ky];
-    te=ty[ny-ky-1];
+    tb=ty[ky]-err;
+    te=ty[ny-ky-1]+err;
     arg=y;
     idx=ky;
     if(arg<tb){
