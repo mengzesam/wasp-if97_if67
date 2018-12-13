@@ -743,7 +743,8 @@ double IF97Region2::PCv2T(double p,double cv,int& itera){
 double IF97Region2::TH2P(double t,double h,int& itera){
     double err=ERR;  
     //206.21151503041943,1.8881957734475048,1.4221208778250582
-    if(abs(h-2500.8928597343438)<err) return 0.0;//at 0.000611Mpa,0C 
+    if(abs(h-2500.8928597343438)<err) return 0.0;//at 0.000611Mpa,0C
+    itera=0; 
     double tau=540.0/(t+T0);
     double gamma0_tau=0;
     for(int i=0;i<9;i++){
@@ -794,7 +795,7 @@ double IF97Region2::TH2P(double t,double h,int& itera){
             p=p>pU?pU:p;
             p1=p-0.65;
             if(p1<0.0006112126775)
-                p1=0.0006112126775;
+                p1=p+0.001;
         }
     }else{//100>p>40
         double tx[8]={
@@ -823,7 +824,6 @@ double IF97Region2::TH2P(double t,double h,int& itera){
         gammar_tau+=lefts[i]*pow(pi,Ii_tab11[i]);
     }    
     hh=tau*(gamma0_tau+gammar_tau)*(t+T0)*R;
-    itera=0;
     if(abs(hh-h)>err){
         double p0=p;
         double h0=hh;
@@ -934,6 +934,263 @@ double IF97Region2::TH2Pbeta(double t,double h,int& itera){
     return p;
 }
 double IF97Region2::TS2P(double t,double s,int& itera){
+    double err=ERR;  
+    if(abs(s-9.1559208113668618)<err) return 0.0;//at 0.000611Mpa,0C    
+    itera=0;
+    double tau=540.0/(t+T0);
+    double gamma0=0;
+    double gamma0_tau=0;
+    for(int i=0;i<9;i++){
+        gamma0+=ni_tab10[i]*pow(tau,Ji_tab10[i]);
+        gamma0_tau+=ni_tab10[i]*Ji_tab10[i]*pow(tau,Ji_tab10[i]-1);
+    }
+    double lefts[43];
+    double lefts_tau[43];
+    for(int i=0;i<43;i++){
+        lefts[i]=ni_tab11[i]*pow(tau-0.5,Ji_tab11[i]);//*pow(pi,Ii_tab11[i]);
+        lefts_tau[i]=ni_tab11[i]*Ji_tab11[i]*pow(tau-0.5,Ji_tab11[i]-1);
+    }
+    double p,p1,pU;
+    if(t<=350){
+        pU=T2P(t);
+    }else if(t<=590){
+        pU=T2P_B23(t);
+    }else{
+        pU=100.0;
+    }
+    double ss=0.0;
+    double pi,gammar,gammar_tau;
+    int flag=0;
+    if(pU>51.0){
+        p=51;
+        flag=4;
+    }else if(pU>22.064){
+        p=22.064;
+        flag=3;
+    }else if(pU>5){
+        p=5.0;
+        flag=2;
+    }else if(pU>0.2){
+        p=0.2;
+        flag=1;
+    }
+    if(flag>0){
+        pi=p/1.0;
+        gammar=0;
+        gammar_tau=0;
+        for(int i=0;i<43;i++){
+            double tmp=pow(pi,Ii_tab11[i]);
+            gammar+=lefts[i]*tmp;
+            gammar_tau+=lefts_tau[i]*tmp;
+        }
+        ss=(tau*(gamma0_tau+gammar_tau)-((gamma0+log(pi))+gammar))*R;
+        if(abs(s-ss)<err) return p;
+    }
+    if(s>ss && flag==4){
+        p=22.064;
+        pi=p/1.0;
+        gammar=0;
+        gammar_tau=0;
+        for(int i=0;i<43;i++){
+            double tmp=pow(pi,Ii_tab11[i]);
+            gammar+=lefts[i]*tmp;
+            gammar_tau+=lefts_tau[i]*tmp;
+        }
+        ss=(tau*(gamma0_tau+gammar_tau)-((gamma0+log(pi))+gammar))*R;
+        if(abs(s-ss)<err) return p;
+        if(s<ss)
+            flag=3;
+        else
+            flag=2;
+    }
+    if(s>ss && flag==3){
+        p=5.0;
+        pi=p/1.0;
+        gammar=0;
+        gammar_tau=0;
+        for(int i=0;i<43;i++){
+            double tmp=pow(pi,Ii_tab11[i]);
+            gammar+=lefts[i]*tmp;
+            gammar_tau+=lefts_tau[i]*tmp;
+        }
+        ss=(tau*(gamma0_tau+gammar_tau)-((gamma0+log(pi))+gammar))*R;
+        if(abs(s-ss)<err) return p;
+        if(s<ss)
+            flag=2;
+        else
+            flag=1;
+    }
+    if(s>ss && flag==2){
+        p=0.2;
+        pi=p/1.0;
+        gammar=0;
+        gammar_tau=0;
+        for(int i=0;i<43;i++){
+            double tmp=pow(pi,Ii_tab11[i]);
+            gammar+=lefts[i]*tmp;
+            gammar_tau+=lefts_tau[i]*tmp;
+        }
+        ss=(tau*(gamma0_tau+gammar_tau)-((gamma0+log(pi))+gammar))*R;
+        if(abs(s-ss)<err) return p;
+        if(s<ss)
+            flag=1;
+        else
+            flag=0;
+    }
+    if(flag==0){//p in 0.0006112126775,0.2
+        double tx[8]={
+            0.000000,0.000000,0.000000,0.000000,800.000000,800.000000,800.000000,800.000000
+        };
+        double ty[8]={
+            7.126856,7.126856,7.126856,7.126856,11.921055,11.921055,11.921055,11.921055
+        };
+        double c[16]={
+            0.024149,-0.081560,0.460073,-1.222750,0.297411,-0.674278,0.829920,-0.464039,1.274752,-0.875112,0.375241,-0.097173,2.401873,-0.681901,0.197974,-0.031693
+        };
+        int errflag;
+        p=bfit_cbisp(tx,8,ty,8,c,16,3,3,t,s,errflag);
+        if(p<0.0006112126775){
+            p=0.0006112126775;
+            p1=p+0.001;
+        }else{            
+            p=p>pU?pU:p;
+            p1=p-0.035;
+            if(p1<0.0006112126775)
+                p1=p+0.001;
+        }        
+    }else if(flag==1){//p in 0.2,5
+        double tx[8]={
+            120.211548,120.211548,120.211548,120.211548,800.000000,800.000000,800.000000,800.000000
+        };
+        double ty[8]={
+            5.973704,5.973704,5.973704,5.973704,9.247858,9.247858,9.247858,9.247858
+        };
+        double c[16]={
+            0.748873,1.498318,-3.401404,4.078214,4.417723,-3.976241,5.925203,-5.286558,23.451532,-11.612985,4.291388,-0.846591,61.680279,-5.354247,2.151659,0.021614
+        };
+        int errflag;
+        p=bfit_cbisp(tx,8,ty,8,c,16,3,3,t,s,errflag);
+         p=p>pU?pU:p;
+        p1=p-0.18;
+    }else if(flag==2){//p in 5,22.064
+        double tx[8]={
+            263.942871,263.942871,263.942871,263.942871,800.000000,800.000000,800.000000,800.000000
+        };
+        double ty[8]={
+            5.211226,5.211226,5.211226,5.211226,7.745923,7.745923,7.745923,7.745923
+        };
+        double c[16]={
+            8.421263,7.961235,-10.196012,16.258028,17.901077,20.163002,-10.479942,7.308693,66.863998,13.779356,1.412960,0.306350,241.145187,42.880291,14.164504,4.992657
+        };
+        int errflag;
+        p=bfit_cbisp(tx,8,ty,8,c,16,3,3,t,s,errflag);
+        p=p>pU?pU:p;
+        p1=p-0.2;
+    }else if(flag==3){//p in 22.064,51
+        double tx[8]={
+            388.786774,388.786774,388.786774,388.786774,800.000000,800.000000,800.000000,800.000000
+        };
+        double ty[8]={
+            5.050269,5.050269,5.050269,5.050269,7.000636,7.000636,7.000636,7.000636
+        };
+        double c[16]={
+            23.700451,18.798481,7.755335,-16.206581,49.211502,31.912685,14.401442,5.865045,112.819122,49.700844,18.766134,8.645574,294.154022,116.963112,48.439178,22.071695
+        };
+        int errflag;
+        p=bfit_cbisp(tx,8,ty,8,c,16,3,3,t,s,errflag);
+        p=p>pU?pU:p;
+        p1=p-0.31;
+    }else if(flag==4){//p in 51,100
+        double tx[8]={
+            490.127808,490.127808,490.127808,490.127808,800.000000,800.000000,800.000000,800.000000
+        };
+        double ty[8]={
+            5.048097,5.048097,5.048097,5.048097,6.509957,6.509957,6.509957,6.509957
+        };
+        double c[16]={
+            51.098148,34.139858,37.609550,-47.094982,89.218246,41.397533,52.698341,12.234321,181.238708,69.388695,53.960861,27.610786,342.254669,156.398514,89.991989,51.023918
+        };
+        int errflag;
+        p=bfit_cbisp(tx,8,ty,8,c,16,3,3,t,s,errflag);
+        p=p>pU?pU:p;
+        if(p>100.0) p=100.0;
+        p1=p-0.32;
+    }
+    pi=p/1.0;
+    gammar=0;
+    gammar_tau=0;
+    for(int i=0;i<43;i++){
+        double tmp=pow(pi,Ii_tab11[i]);
+        gammar+=lefts[i]*tmp;
+        gammar_tau+=lefts_tau[i]*tmp;
+    }
+    ss=(tau*(gamma0_tau+gammar_tau)-((gamma0+log(pi))+gammar))*R;
+    if(abs(ss-s)>err){
+        double p0=p;
+        double s0=ss;
+        pi=p1/1.0;
+        gammar=0;
+        gammar_tau=0;
+        for(int i=0;i<43;i++){
+            double tmp=pow(pi,Ii_tab11[i]);
+            gammar+=lefts[i]*tmp;
+            gammar_tau+=lefts_tau[i]*tmp;
+        }
+        double s1=(tau*(gamma0_tau+gammar_tau)-((gamma0+log(pi))+gammar))*R;
+        p=p1+(s-s1)/(s0-s1)*(p0-p1);
+        if(flag==0 && p<0.0006112126775)
+            p=0.0006112126775;
+        pi=p/1.0;
+        gammar=0;
+        gammar_tau=0;
+        for(int i=0;i<43;i++){
+            double tmp=pow(pi,Ii_tab11[i]);
+            gammar+=lefts[i]*tmp;
+            gammar_tau+=lefts_tau[i]*tmp;
+        }
+        ss=(tau*(gamma0_tau+gammar_tau)-((gamma0+log(pi))+gammar))*R;
+        if(flag>0)
+            while(abs(ss-s)>err){
+                itera++;
+                p0=p1;
+                s0=s1;
+                p1=p;
+                s1=ss;
+                p=p1+(s-s1)/(s0-s1)*(p0-p1);
+                pi=p/1.0;
+                gammar=0;
+                gammar_tau=0;
+                for(int i=0;i<43;i++){
+                    double tmp=pow(pi,Ii_tab11[i]);
+                    gammar+=lefts[i]*tmp;
+                    gammar_tau+=lefts_tau[i]*tmp;
+                }
+                ss=(tau*(gamma0_tau+gammar_tau)-((gamma0+log(pi))+gammar))*R;
+            }
+        else    //flag==0        
+            while(abs(ss-s)>err){
+                itera++;
+                p0=p1;
+                s0=s1;
+                p1=p;
+                s1=ss;
+                p=p1+(s-s1)/(s0-s1)*(p0-p1);
+                if(p<0.0006112126775)
+                    p=0.0006112126775;
+                pi=p/1.0;
+                gammar=0;
+                gammar_tau=0;
+                for(int i=0;i<43;i++){
+                    double tmp=pow(pi,Ii_tab11[i]);
+                    gammar+=lefts[i]*tmp;
+                    gammar_tau+=lefts_tau[i]*tmp;
+                }
+                ss=(tau*(gamma0_tau+gammar_tau)-((gamma0+log(pi))+gammar))*R;
+            }
+    }
+    return p;
+}
+double IF97Region2::TS2Pbeta(double t,double s,int& itera){
     double err=ERR;
     if(abs(s-9.1559208113668618)<err) return 0.0;//at 0.000611Mpa,0C  
     double tau=540.0/(t+T0);
@@ -1569,7 +1826,7 @@ double IF97Region2::HS2P2c(double h,double s){
 }
 
 void verifyPT(double pll,double prr,int div1,int div2){
-    double p,t,v,h,vv,pp,tt;
+    double p,t,v,h,s,vv,pp,tt;
     int i=0,max=0;
     double pl=pll;//IF97Region2::T2P(0);
     double pr=prr;  
@@ -1583,8 +1840,8 @@ void verifyPT(double pll,double prr,int div1,int div2){
         double dt=(800-tl)/div2;
         int off=30;
         for(t=tl;t<800.00001;t+=dt){
-            h=IF97Region2::PT2H(p,t);
-            cout<<setprecision(10)<<t<<'\t'<<h<<"\t"<<p;
+            s=IF97Region2::PT2S(p,t);
+            cout<<setprecision(10)<<t<<'\t'<<s<<"\t"<<p;
             off--;            
 /*             if(off<0){
                 cout<<"\tzz=cbisp_db(tx,8,ty,8,c,16,3,3,";
@@ -1597,7 +1854,6 @@ void verifyPT(double pll,double prr,int div1,int div2){
         }
     }   
 }
-
 void verifyTH(double pll,double prr,int div1,int div2){
     double p,t,v,h,vv,pp,tt;
     int i=0,max=0;
@@ -1618,7 +1874,26 @@ void verifyTH(double pll,double prr,int div1,int div2){
         }
     }   
 }
-
+void verifyTS(double pll,double prr,int div1,int div2){
+    double p,t,v,h,s,vv,pp,tt;
+    int i=0,max=0;
+    double pl=pll;//IF97Region2::T2P(0);
+    double pr=prr;  
+    double dp=(pr-pl)/div1;
+    for(p=pl;p<=pr+0.0001;p+=dp){
+        double tl;
+        if(p>=IF97Region2::T2P(350))
+            tl=IF97Region2::P2T_B23(p);
+        else 
+            tl=IF97Region2::P2T(p);
+        double dt=(800-tl)/div2;
+        for(t=tl;t<800.00001;t+=dt){
+            s=IF97Region2::PT2S(p,t);
+            pp=IF97Region2::TS2P(t,s,i);
+            cout<<setprecision(10)<<i<<'\t'<<t<<'\t'<<s<<"\t"<<p<<'\t'<<pp<<'\t'<<abs(p-pp)<<endl;
+        }
+    }   
+}
 int main(int argc, char *argv[]){ 
     double p,t,h,u,s,v,cp,cv,pp,tt,p2;
     int i;
@@ -1628,11 +1903,12 @@ int main(int argc, char *argv[]){
         int div1=atoi(argv[3]);
         int div2=atoi(argv[4]);
         //verifyPT(pl,pr,div1,div2);
-        verifyTH(pl,pr,div1,div2);
+        //verifyTH(pl,pr,div1,div2);
+        verifyTS(pl,pr,div1,div2);
     }
-    p=41;
-    t=1000-273.15;
-    h=IF97Region2::PT2H(p,t);
-    pp=IF97Region2::TH2P(t,h,i);
+    p=36.33672546;
+    t=791.5362542;
+    s=IF97Region2::PT2S(p,t);
+    pp=IF97Region2::TS2P(t,s,i);
     return 0;
 } 

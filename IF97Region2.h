@@ -33,6 +33,7 @@ public://static function:T,H to
 	static double TH2Pbeta(double t,double h,int & itera);
 public://static function:T,S to
 	static double TS2P(double t,double s,int & itera);
+	static double TS2Pbeta(double t,double s,int & itera);
 public://static function:T,V to
 	static double TV2P(double t,double v,int & itera);
 public://static function:T,Cp to
