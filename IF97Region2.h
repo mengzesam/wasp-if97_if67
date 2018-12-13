@@ -30,6 +30,7 @@ public://static function:P,Cv to
 	static double PCv2T(double p,double cv,int & itera);
 public://static function:T,H to
 	static double TH2P(double t,double h,int & itera);
+	static double TH2Pbeta(double t,double h,int & itera);
 public://static function:T,S to
 	static double TS2P(double t,double s,int & itera);
 public://static function:T,V to

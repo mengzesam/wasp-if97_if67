@@ -4,6 +4,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <time.h>
+#include "deboorbispline.h"
 using namespace std;
 /* IF97 page17
 *In addition to the properties in the stable single-phase vapor region, 
@@ -738,7 +739,125 @@ double IF97Region2::PCv2T(double p,double cv,int& itera){
     }
     return t;    
 }
+
 double IF97Region2::TH2P(double t,double h,int& itera){
+    double err=ERR;  
+    //206.21151503041943,1.8881957734475048,1.4221208778250582
+    if(abs(h-2500.8928597343438)<err) return 0.0;//at 0.000611Mpa,0C 
+    double tau=540.0/(t+T0);
+    double gamma0_tau=0;
+    for(int i=0;i<9;i++){
+        gamma0_tau+=ni_tab10[i]*Ji_tab10[i]*pow(tau,Ji_tab10[i]-1);
+    }
+    double lefts[43];
+    for(int i=0;i<43;i++){
+        lefts[i]=ni_tab11[i]*Ji_tab11[i]*pow(tau-0.5,Ji_tab11[i]-1);
+    }    
+    double p,p1,pU;
+    if(t<=350){
+        pU=T2P(t);
+    }else if(t<=590){
+        pU=T2P_B23(t);
+    }else{
+        pU=100.0;
+    }
+    double hh=0.0;
+    double pi,gammar_tau;
+    if(pU>40){
+        p=40.0;    
+        pi=p/1.0;
+        gammar_tau=0;
+        for(int i=0;i<43;i++){
+            gammar_tau+=lefts[i]*pow(pi,Ii_tab11[i]);
+        }    
+        hh=tau*(gamma0_tau+gammar_tau)*(t+T0)*R;
+        if(abs(h-hh)<err) return p;//p==40.0
+    }
+    if(h>hh){//p<40.0
+        double tx[8]={
+            0.0,0.0,0.0,0.0,800.0,800.0,800.0,800.0
+        };
+        double ty[8]={
+            2500.892578,2500.892578,2500.892578,2500.892578,
+            4160.661133,4160.661133,4160.661133,4160.661133
+        };
+        double c[16]={
+            0.647406,-16.25646,-76.148567,-428.487885,10.696771,38.049583,66.789963,-22.097425,
+            -36.746525,-58.373764,-73.076035,-136.184875,291.421692,210.648056,120.988434,-0.010968
+        };
+        int errflag;
+        p=bfit_cbisp(tx,8,ty,8,c,16,3,3,t,h,errflag);
+        if(p<0.0006112126775){
+            p=0.0006112126775;
+            p1=p+0.001;
+        }else{            
+            p=p>pU?pU:p;
+            p1=p-0.65;
+            if(p1<0.0006112126775)
+                p1=0.0006112126775;
+        }
+    }else{//100>p>40
+        double tx[8]={
+            459.355225,459.355225,459.355225,459.355225,800,800,800,800
+        };
+        double ty[8]={
+            2607.235352,2607.235352,2607.235352,2607.235352,
+            3972.809326,3972.809326,3972.809326,3972.809326
+        };
+        double c[16]={
+            40.123901,23.970646,13.570488,-418.193695,77.462906,36.822258,161.08992,-33.606602,
+            178.053467,-85.738617,34.603653,-29.018866,997.53418,240.646286,136.728943,40.02177
+        };
+        int errflag;
+        p=bfit_cbisp(tx,8,ty,8,c,16,3,3,t,h,errflag);
+        if(p>100.0){
+            p=100.0;
+        }else{
+            p=p>pU?pU:p;
+        }
+        p1=p-0.60;
+    }
+    pi=p/1.0;
+    gammar_tau=0;
+    for(int i=0;i<43;i++){
+        gammar_tau+=lefts[i]*pow(pi,Ii_tab11[i]);
+    }    
+    hh=tau*(gamma0_tau+gammar_tau)*(t+T0)*R;
+    itera=0;
+    if(abs(hh-h)>err){
+        double p0=p;
+        double h0=hh;
+        pi=p1/1.0;
+        gammar_tau=0;
+        for(int i=0;i<43;i++){
+            gammar_tau+=lefts[i]*pow(pi,Ii_tab11[i]);
+        }    
+        double h1=tau*(gamma0_tau+gammar_tau)*(t+T0)*R;
+        p=p1+(h-h1)/(h0-h1)*(p0-p1);
+        pi=p/1.0;
+        gammar_tau=0;
+        for(int i=0;i<43;i++){
+            gammar_tau+=lefts[i]*pow(pi,Ii_tab11[i]);
+        }    
+        hh=tau*(gamma0_tau+gammar_tau)*(t+T0)*R;
+        while(abs(hh-h)>err){
+            itera++;
+            p0=p1;
+            h0=h1;
+            p1=p;
+            h1=hh;
+            p=p1+(h-h1)/(h0-h1)*(p0-p1);
+            pi=p/1.0;
+            gammar_tau=0;
+            for(int i=0;i<43;i++){
+                gammar_tau+=lefts[i]*pow(pi,Ii_tab11[i]);
+            }    
+            hh=tau*(gamma0_tau+gammar_tau)*(t+T0)*R;
+        }        
+    }
+    return p;
+}
+double IF97Region2::TH2Pbeta(double t,double h,int& itera){
     double err=ERR;  
     //206.21151503041943,1.8881957734475048,1.4221208778250582
     if(abs(h-2500.8928597343438)<err) return 0.0;//at 0.000611Mpa,0C 
@@ -1448,18 +1567,72 @@ double IF97Region2::HS2P2c(double h,double s){
     pi=pi*pi*pi*pi;
     return 100.0*pi;
 }
-int main(){ 
+
+void verifyPT(double pll,double prr,int div1,int div2){
+    double p,t,v,h,vv,pp,tt;
+    int i=0,max=0;
+    double pl=pll;//IF97Region2::T2P(0);
+    double pr=prr;  
+    double dp=(pr-pl)/div1;
+    for(p=pl;p<=pr+0.0001;p+=dp){
+        double tl;
+        if(p>=IF97Region2::T2P(350))
+            tl=IF97Region2::P2T_B23(p);
+        else 
+            tl=IF97Region2::P2T(p);
+        double dt=(800-tl)/div2;
+        int off=30;
+        for(t=tl;t<800.00001;t+=dt){
+            h=IF97Region2::PT2H(p,t);
+            cout<<setprecision(10)<<t<<'\t'<<h<<"\t"<<p;
+            off--;            
+/*             if(off<0){
+                cout<<"\tzz=cbisp_db(tx,8,ty,8,c,16,3,3,";
+                cout<<setprecision(10)<<t<<","<<h<<",&errFlag);\t";	
+                cout<<setprecision(10)<<"z0="<<p<<";\t";	 
+                cout<<"printf(\"%15.10f,%15.10f,%15.10f\",zz,z0,fabs(zz-z0));"<<endl;
+                off+=10000;
+            }else */
+                cout<<endl;
+        }
+    }   
+}
+
+void verifyTH(double pll,double prr,int div1,int div2){
+    double p,t,v,h,vv,pp,tt;
+    int i=0,max=0;
+    double pl=pll;//IF97Region2::T2P(0);
+    double pr=prr;  
+    double dp=(pr-pl)/div1;
+    for(p=pl;p<=pr+0.0001;p+=dp){
+        double tl;
+        if(p>=IF97Region2::T2P(350))
+            tl=IF97Region2::P2T_B23(p);
+        else 
+            tl=IF97Region2::P2T(p);
+        double dt=(800-tl)/div2;
+        for(t=tl;t<800.00001;t+=dt){
+            h=IF97Region2::PT2H(p,t);
+            pp=IF97Region2::TH2P(t,h,i);
+            cout<<setprecision(10)<<i<<'\t'<<t<<'\t'<<h<<"\t"<<p<<'\t'<<pp<<'\t'<<abs(p-pp)<<endl;
+        }
+    }   
+}
+
+int main(int argc, char *argv[]){ 
     double p,t,h,u,s,v,cp,cv,pp,tt,p2;
     int i;
-    p=0.0035;
-    t=700-273.15;
+    if(argc==5){        
+        double pl=atof(argv[1]);
+        double pr=atof(argv[2]);
+        int div1=atoi(argv[3]);
+        int div2=atoi(argv[4]);
+        //verifyPT(pl,pr,div1,div2);
+        verifyTH(pl,pr,div1,div2);
+    }
+    p=41;
+    t=1000-273.15;
     h=IF97Region2::PT2H(p,t);
-    s=IF97Region2::PT2S(p,t);
-    v=IF97Region2::PT2V(p,t);
-    u=IF97Region2::PT2U(p,t);
-    cp=IF97Region2::PT2Cp(p,t);
-    cv=IF97Region2::PT2Cv(p,t);
-    p=IF97Region2::TH2P(t,h,i);
-    p=IF97Region2::TS2P(t,s,i);
+    pp=IF97Region2::TH2P(t,h,i);
     return 0;
 } 
