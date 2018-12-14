@@ -774,11 +774,6 @@ double IF97Region2::TH2P(double t,double h,int& itera){
         hh=tau*(gamma0_tau+gammar_tau)*(t+T0)*R;
         if(abs(h-hh)<err) return p;//p==40.0
     }
-    double tt=t;
-    if(abs(t-800)<err) 
-        tt=800.0-err;
-    else if(abs(t)<err)
-        tt=err;
     if(h>hh){//p<40.0
         double tx[8]={
             0.0,0.0,0.0,0.0,800.0,800.0,800.0,800.0
@@ -792,7 +787,7 @@ double IF97Region2::TH2P(double t,double h,int& itera){
             -36.746525,-58.373764,-73.076035,-136.184875,291.421692,210.648056,120.988434,-0.010968
         };
         int errflag;
-        p=bfit_cbisp(tx,8,ty,8,c,16,3,3,tt,h,errflag);
+        p=bfit_cbisp(tx,8,ty,8,c,16,3,3,t,h,errflag);
         if(p<0.0006112126775){
             p=0.0006112126775;
             p1=p+0.001;
@@ -815,7 +810,7 @@ double IF97Region2::TH2P(double t,double h,int& itera){
             178.053467,-85.738617,34.603653,-29.018866,997.53418,240.646286,136.728943,40.02177
         };
         int errflag;
-        p=bfit_cbisp(tx,8,ty,8,c,16,3,3,tt,h,errflag);
+        p=bfit_cbisp(tx,8,ty,8,c,16,3,3,t,h,errflag);
         if(p>100.0){
             p=100.0;
         }else{
@@ -1045,11 +1040,6 @@ double IF97Region2::TS2P(double t,double s,int& itera){
     }
     if(s>ss && flag==1)
         flag=0;
-    double tt=t;
-    if(abs(t-800)<err) 
-        tt=800.0-err;
-    else if(abs(t)<err)
-        tt=err;
     if(flag==0){//p in 0.0006112126775,0.2
         double tx[8]={
             0.000000,0.000000,0.000000,0.000000,800.000000,800.000000,800.000000,800.000000
@@ -1082,7 +1072,7 @@ double IF97Region2::TS2P(double t,double s,int& itera){
             0.748873,1.498318,-3.401404,4.078214,4.417723,-3.976241,5.925203,-5.286558,23.451532,-11.612985,4.291388,-0.846591,61.680279,-5.354247,2.151659,0.021614
         };
         int errflag;
-        p=bfit_cbisp(tx,8,ty,8,c,16,3,3,tt,s,errflag);
+        p=bfit_cbisp(tx,8,ty,8,c,16,3,3,t,s,errflag);
         p=p>pU?pU:p;
         p1=p-0.18;
         if(p1<0.2){
@@ -1102,7 +1092,7 @@ double IF97Region2::TS2P(double t,double s,int& itera){
             8.421263,7.961235,-10.196012,16.258028,17.901077,20.163002,-10.479942,7.308693,66.863998,13.779356,1.412960,0.306350,241.145187,42.880291,14.164504,4.992657
         };
         int errflag;
-        p=bfit_cbisp(tx,8,ty,8,c,16,3,3,tt,s,errflag);
+        p=bfit_cbisp(tx,8,ty,8,c,16,3,3,t,s,errflag);
         p=p>pU?pU:p;
         p1=p-0.2;
     }else if(flag==3){//p in 22.064,72
@@ -1116,7 +1106,7 @@ double IF97Region2::TS2P(double t,double s,int& itera){
             23.426598,20.178926,8.316549,-30.097460,48.588348,28.755150,22.783840,0.488700,118.362106,43.441513,20.927256,8.655866,302.188324,115.740746,48.481609,22.090857
         };
         int errflag;
-        p=bfit_cbisp(tx,8,ty,8,c,16,3,3,tt,s,errflag);
+        p=bfit_cbisp(tx,8,ty,8,c,16,3,3,t,s,errflag);
         p=p>pU?pU:p;
         p1=p-0.75;
     }else if(flag==4){//p in 72,100
@@ -1130,7 +1120,7 @@ double IF97Region2::TS2P(double t,double s,int& itera){
             72.012535,44.676453,49.220459,-19.472065,117.455498,58.057247,62.072300,28.900433,210.088821,95.226028,71.526527,44.487778,351.627228,182.483246,113.632011,72.038086
         };
         int errflag;
-        p=bfit_cbisp(tx,8,ty,8,c,16,3,3,tt,s,errflag);
+        p=bfit_cbisp(tx,8,ty,8,c,16,3,3,t,s,errflag);
         p=p>pU?pU:p;
         if(p>100.0) p=100.0;
         p1=p-0.055;
@@ -1843,7 +1833,30 @@ double IF97Region2::HS2P2c(double h,double s){
     return 100.0*pi;
 }
 
-void verifyPT(double pll,double prr,int div1,int div2){
+void verifyPT(double ll,double rr,int div1,int div2){
+    double p,t,v,h,s,vv,pp,tt;
+    int i=0,max=0;
+    double tl=ll;//IF97Region2::T2P(0);
+    double tr=rr>800?800:rr;  
+    double dt=(tr-tl)/div1;
+    for(t=tl;t<=tr+0.0001;t+=dt){
+        double pd,pu;
+        pd=0.0006112126775;
+        if(t>=590)
+            pu=100.0;
+        else if(t>=350)
+            pu=IF97Region2::T2P_B23(t);
+        else
+            pu=IF97Region2::T2P(t);
+        double dp=(pu-pd)/div2;
+        dp=dp<1E-12?1:dp;
+        for(p=pd;p<=pu+1E-12;p+=dp){
+            v=IF97Region2::PT2V(p,t);
+            cout<<setprecision(10)<<t<<'\t'<<p<<"\t"<<v<<endl;
+        }
+    }   
+}
+void verifyPT2(double pll,double prr,int div1,int div2){
     double p,t,v,h,s,vv,pp,tt;
     int i=0,max=0;
     double pl=pll;//IF97Region2::T2P(0);
@@ -1858,10 +1871,10 @@ void verifyPT(double pll,double prr,int div1,int div2){
         double dt=(800-tl)/div2;
         int off=30;
         for(t=tl;t<800.00001;t+=dt){
-            s=IF97Region2::PT2S(p,t);
-            cout<<setprecision(10)<<t<<'\t'<<s<<"\t"<<p;
+            v=IF97Region2::PT2V(p,t);
+            cout<<setprecision(10)<<t<<'\t'<<p<<"\t"<<v;
             off--;            
-/*             if(off<0){
+ /*             if(off<0){
                 cout<<"\tzz=cbisp_db(tx,8,ty,8,c,16,3,3,";
                 cout<<setprecision(10)<<t<<","<<h<<",&errFlag);\t";	
                 cout<<setprecision(10)<<"z0="<<p<<";\t";	 
@@ -1911,30 +1924,28 @@ void verifyTS(double pll,double prr,int div1,int div2){
             s=IF97Region2::PT2S(p,t);
             if(j==8)
                 i=i+1; 
-            pp=IF97Region2::TS2Pbeta(t,s,i);
+            pp=IF97Region2::TS2P(t,s,i);
             cout<<setprecision(10)<<i<<'\t'<<t<<'\t'<<s<<"\t"<<p<<'\t'<<pp<<'\t'<<abs(p-pp)<<endl;
         }
     }   
 }
 int main(int argc, char *argv[]){ 
     double p,t,h,u,s,v,cp,cv,pp,tt,p2;
-    double pl,pr;
+    double ll,rr;
     int div1,div2;
     int i;
     if(argc==5){        
-        double pl=atof(argv[1]);
-        double pr=atof(argv[2]);
+        double ll=atof(argv[1]);
+        double rr=atof(argv[2]);
         int div1=atoi(argv[3]);
         int div2=atoi(argv[4]);
-        //verifyPT(pl,pr,div1,div2);
-        //verifyTH(pl,pr,div1,div2);
-        verifyTS(pl,pr,div1,div2);
+        verifyPT(ll,rr,div1,div2);
     }else{
-        pl=0.0006112126775;
-        pr=1;
+        ll=0.0006112126775;
+        rr=1;
         div1=1;
         div2=999;
-        verifyTS(pl,pr,div1,div2);
+        verifyTH(ll,rr,div1,div2);
     }
     p=42.94329168000;
     t=800;
