@@ -16,7 +16,7 @@ private:
 	static void bfit_cbspl(double t[],int n,int k,double x,int idx,double h[6]);
 public:
 	static double bfit_cbisp(double tx[],int nx,double ty[],int ny,double c[],int nc,int kx,int ky,
-            double x,double y,int& errFlag);
+            double x,double y,int& errFlag,double boundary_gap);
 protected:
     const static double ERR0;
     const static double ERR;
@@ -121,7 +121,7 @@ void IF97Base::bfit_cbspl(double t[],int n,int k,double x,int idx,double h[6]){
 }
 
 double IF97Base::bfit_cbisp(double tx[],int nx,double ty[],int ny,double c[],int nc,int kx,int ky,
-            double x,double y,int& errFlag){
+            double x,double y,int& errFlag,double boundary_gap=1E-5){
 	  /*
     *as per:FITPACK fpbisp.f,which was code with fortran,this function translate it into cpp
     *inputs:tx[nx],ty[ny],c[(nx-kx-1)*(ny-ky-1)],kx,ky bispline knot points,coefficents 
@@ -133,11 +133,10 @@ double IF97Base::bfit_cbisp(double tx[],int nx,double ty[],int ny,double c[],int
     *
     *NOTE:kx,ky<=5
     */
-   double err=1E-5;
     double z=0.0;
     errFlag=0;
-    double tb=tx[kx]-err;
-    double te=tx[nx-kx-1]+err;
+    double tb=tx[kx]-boundary_gap;
+    double te=tx[nx-kx-1]+boundary_gap;
     double arg=x;
     int idx=kx;
     if(arg<tb){
@@ -154,8 +153,8 @@ double IF97Base::bfit_cbisp(double tx[],int nx,double ty[],int ny,double c[],int
     double hx[6];
     int xidx=idx;
     bfit_cbspl(tx,nx,kx,arg,idx,hx);
-    tb=ty[ky]-err;
-    te=ty[ny-ky-1]+err;
+    tb=ty[ky]-boundary_gap;
+    te=ty[ny-ky-1]+boundary_gap;
     arg=y;
     idx=ky;
     if(arg<tb){
