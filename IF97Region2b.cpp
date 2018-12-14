@@ -883,7 +883,7 @@ double IF97Region2::TH2Pbeta(double t,double h,int& itera){
     }else{
         pU=100.0;
     }
-    p=(0.0006112126775+pU)/2.0;
+    p=(0.000611+pU)/2.0;
     double pi=p/1.0;
     double gammar_tau=0;
     for(int i=0;i<43;i++){
@@ -896,7 +896,7 @@ double IF97Region2::TH2Pbeta(double t,double h,int& itera){
         double h0=hh;
         double p1;
         if(h>hh){
-            p1=(0.0006112126775+p)/2.0;
+            p1=(0.000611+p)/2.0;
         }else{
             p1=(p+pU)/2.0;
         }
@@ -907,8 +907,8 @@ double IF97Region2::TH2Pbeta(double t,double h,int& itera){
         }    
         double h1=tau*(gamma0_tau+gammar_tau)*(t+T0)*R;
         p=p1+(h-h1)/(h0-h1)*(p0-p1);
-        if(p<0.0006112126775)
-            p=0.0006112126775;
+        if(p<0.000611)
+            p=0.000611;
         else if(p>pU)
             p=pU;
         pi=p/1.0;
@@ -924,8 +924,8 @@ double IF97Region2::TH2Pbeta(double t,double h,int& itera){
             p1=p;
             h1=hh;
             p=p1+(h-h1)/(h0-h1)*(p0-p1);
-            if(p<0.0006112126775)
-                p=0.0006112126775;
+            if(p<0.000611)
+                p=0.000611;
             else if(p>pU)
                 p=pU;
             pi=p/1.0;
@@ -966,8 +966,8 @@ double IF97Region2::TS2P(double t,double s,int& itera){
     double ss=0.0;
     double pi,gammar,gammar_tau;
     int flag=0;
-    if(pU>72.0){
-        p=72;
+    if(pU>51.0){
+        p=51;
         flag=4;
     }else if(pU>22.064){
         p=22.064;
@@ -1085,12 +1085,8 @@ double IF97Region2::TS2P(double t,double s,int& itera){
         p=bfit_cbisp(tx,8,ty,8,c,16,3,3,tt,s,errflag);
         p=p>pU?pU:p;
         p1=p-0.18;
-        if(p1<0.2){
-            p1=0.2;
-            if(abs(p-p1)<err){
-                p1=p-0.01;
-            }
-        }
+        if(p1<0.0006112126775)
+            p1=0.0006112126775;
     }else if(flag==2){//p in 5,22.064
         double tx[8]={
             263.942871,263.942871,263.942871,263.942871,800.000000,800.000000,800.000000,800.000000
@@ -1105,35 +1101,35 @@ double IF97Region2::TS2P(double t,double s,int& itera){
         p=bfit_cbisp(tx,8,ty,8,c,16,3,3,tt,s,errflag);
         p=p>pU?pU:p;
         p1=p-0.2;
-    }else if(flag==3){//p in 22.064,72
+    }else if(flag==3){//p in 22.064,51
         double tx[8]={
             388.786774,388.786774,388.786774,388.786774,800.000000,800.000000,800.000000,800.000000
         };
         double ty[8]={
-            5.048097,5.048097,5.048097,5.048097,7.000636,7.000636,7.000636,7.000636
+            5.050269,5.050269,5.050269,5.050269,7.000636,7.000636,7.000636,7.000636
         };
         double c[16]={
-            23.426598,20.178926,8.316549,-30.097460,48.588348,28.755150,22.783840,0.488700,118.362106,43.441513,20.927256,8.655866,302.188324,115.740746,48.481609,22.090857
+            23.700451,18.798481,7.755335,-16.206581,49.211502,31.912685,14.401442,5.865045,112.819122,49.700844,18.766134,8.645574,294.154022,116.963112,48.439178,22.071695
         };
         int errflag;
         p=bfit_cbisp(tx,8,ty,8,c,16,3,3,tt,s,errflag);
         p=p>pU?pU:p;
-        p1=p-0.75;
-    }else if(flag==4){//p in 72,100
+        p1=p-0.31;
+    }else if(flag==4){//p in 51,100
         double tx[8]={
-            538.102783,538.102783,538.102783,538.102783,800.000000,800.000000,800.000000,800.000000
+            490.127808,490.127808,490.127808,490.127808,800.000000,800.000000,800.000000,800.000000
         };
         double ty[8]={
-            5.057999,5.057999,5.057999,5.057999,6.278542,6.278542,6.278542,6.278542
+            5.048097,5.048097,5.048097,5.048097,6.509957,6.509957,6.509957,6.509957
         };
         double c[16]={
-            72.012535,44.676453,49.220459,-19.472065,117.455498,58.057247,62.072300,28.900433,210.088821,95.226028,71.526527,44.487778,351.627228,182.483246,113.632011,72.038086
+            51.098148,34.139858,37.609550,-47.094982,89.218246,41.397533,52.698341,12.234321,181.238708,69.388695,53.960861,27.610786,342.254669,156.398514,89.991989,51.023918
         };
         int errflag;
         p=bfit_cbisp(tx,8,ty,8,c,16,3,3,tt,s,errflag);
         p=p>pU?pU:p;
         if(p>100.0) p=100.0;
-        p1=p-0.055;
+        p1=p-0.32;
     }
     pi=p/1.0;
     gammar=0;
@@ -1233,7 +1229,6 @@ double IF97Region2::TS2Pbeta(double t,double s,int& itera){
     }else{
         pU=100.0;
     }
-    p=(0.0006112126775+pU)/2.0;
     double pi=p/1.0;
     double gammar=0;
     double gammar_tau=0;
@@ -1249,7 +1244,7 @@ double IF97Region2::TS2Pbeta(double t,double s,int& itera){
         double s0=ss;
         double p1;
         if(s>ss){
-            p1=(0.0006112126775+p)/2.0;
+            p1=(0.000611+p)/2.0;
         }else{
             p1=(p+pU)/2.0;
         }
@@ -1263,8 +1258,8 @@ double IF97Region2::TS2Pbeta(double t,double s,int& itera){
         }
         double s1=(tau*(gamma0_tau+gammar_tau)-((gamma0+log(pi))+gammar))*R;
         p=p1+(s-s1)/(s0-s1)*(p0-p1);
-        if(p<0.0006112126775)
-            p=0.0006112126775;
+        if(p<0.000611)
+            p=0.000611;
         else if(p>pU)
             p=pU;
         pi=p/1.0;
@@ -1283,8 +1278,8 @@ double IF97Region2::TS2Pbeta(double t,double s,int& itera){
             p1=p;
             s1=ss;
             p=p1+(s-s1)/(s0-s1)*(p0-p1);
-            if(p<0.0006112126775)
-                p=0.0006112126775;
+            if(p<0.000611)
+                p=0.000611;
             else if(p>pU)
                 p=pU;
             pi=p/1.0;
@@ -1312,6 +1307,8 @@ double IF97Region2::TCv2P(double t,double cv,int& itera){
     double p;
     return p;
 }
+
+
 void IF97Region2::HS2PT(double h,double s,double& p,double& t,int& itera){
     double err=ERR;
     if(h<=H2ab(s)){
@@ -1909,8 +1906,8 @@ void verifyTS(double pll,double prr,int div1,int div2){
         for(t=tl;t<800.00001;t+=dt){
             j++;
             s=IF97Region2::PT2S(p,t);
-            if(j==8)
-                i=i+1; 
+            //if(j==2029)
+            //    i=i+1; 
             pp=IF97Region2::TS2Pbeta(t,s,i);
             cout<<setprecision(10)<<i<<'\t'<<t<<'\t'<<s<<"\t"<<p<<'\t'<<pp<<'\t'<<abs(p-pp)<<endl;
         }
@@ -1926,13 +1923,13 @@ int main(int argc, char *argv[]){
         double pr=atof(argv[2]);
         int div1=atoi(argv[3]);
         int div2=atoi(argv[4]);
-        //verifyPT(pl,pr,div1,div2);
+        verifyPT(pl,pr,div1,div2);
         //verifyTH(pl,pr,div1,div2);
-        verifyTS(pl,pr,div1,div2);
+        //verifyTS(pl,pr,div1,div2);
     }else{
         pl=0.0006112126775;
-        pr=1;
-        div1=1;
+        pr=100;
+        div1=999;
         div2=999;
         verifyTS(pl,pr,div1,div2);
     }
