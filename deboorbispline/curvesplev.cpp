@@ -66,7 +66,7 @@ int curvesplev(const double knots[],const double BCoeff[],const int n,const int 
     return: 0 success
             -1 NOT 2*k>n
             -2 NOT knots[i]<=knots[i+1]
-            less than -10: x[i]<tb or x[i]>te (i=-ret-11)
+            //less than -10: x[i]<tb or x[i]>te (i=-ret-11)
 */
     int ret=0;
     if(2*k>n) return -1;
@@ -78,20 +78,22 @@ int curvesplev(const double knots[],const double BCoeff[],const int n,const int 
     int* index=new int[m];
     double* bj=new double[k+1];
     sortX(x,x_sort,index,m);
-    double tb=knots[k]-err;
-    double te=knots[n-k-1]+err;
+    /* 
+        double tb=knots[k]-err;
+        double te=knots[n-k-1]+err; */
     int j=0;
     for(int i=0;i<m;i++){
         double xx=x_sort[i];
-        if(xx<tb){
-            y[index[i]]=-999999.0;
-            ret=-(10+index[i]+1);
-            continue;
-        }else if(xx>te){
-            y[index[i]]=-999999.0;
-            ret=-(10+index[i]+1);
-            continue;
-        }
+        /*
+            if(xx<tb){
+                ret=-(10+index[i]+1);
+                //y[index[i]]=-999999.0;
+                //continue;
+            }else if(xx>te){
+                ret=-(10+index[i]+1);
+                //y[index[i]]=-999999.0;
+                //continue;
+            } */
         j=findXPos(xx,knots,n,j);
         if(j<k) 
             j=k;
@@ -124,7 +126,7 @@ int main(){
     int n=57;
     int m=5;
     double x[5]={
-        10.5,11,5.5,3.1,1.5
+        11.01,11,5.5,1,0.99
     };
     double y[10]={};
     int ret=curvesplev(knots,BCoeff,n,k,x,y,m);
