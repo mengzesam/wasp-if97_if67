@@ -16,27 +16,26 @@ void sortX(const double x[],double xs[],int index[],const int m){
     }
 }
 int findXPos_(const double x,const double knots[],int left,int right){    
+    //find the first position if x==knots[i]==knots[i+1]...
+    //search in range [left,right) 左闭右开
     double err=1E-8;
-    while(left<=right){
-        int mid=left+(right-left)/2;
-        if(abs(knots[mid]-x)<err)//==
-            return mid;
-        else if(x<knots[mid])
-            return findXPos_(x,knots,left,mid-1);
-        else
-            return findXPos_(x,knots,mid+1,right);
+    int last=right;
+    while(left<right){
+        int mid=left+(right-left)/2;//上中位
+        if(knots[mid]<x)
+            left=mid+1;
+        else //knots[mid]<=x
+            right=mid;
     }
     if(left==0) return left;
-    return left-1;
+    if(left==last) return left-1;
+    if(abs(x-knots[left])<err) return left;//==    
+    return left-1; //else non equal to x
 }
 int findXPos(const double x,const double knots[],const int n,int start=0){
     //find the first position if knots[i] knots[i+1]... == x
-    double err=1E-8;
     if(start>=n) start=0;
-    int pos=findXPos_(x,knots,start,n-1);
-    while(pos>start && abs(knots[pos]-knots[pos-1])<err){
-        pos--;
-    }
+    int pos=findXPos_(x,knots,start,n);
     return pos;
 }
 void bsplvb(const double knots[],const int n,const int k,const double x,const int j,double bj[]){
@@ -99,7 +98,7 @@ int curvesplev(const double knots[],const double BCoeff[],const int n,const int 
             j=k;
         else if(j>=n-k-1)
             j=n-k-2;
-        bsplvb(knots,n,k,xx,j,bj);//before calling, be sure that bj legth must be:k+1       
+        bsplvb(knots,n,k,xx,j,bj);//before calling, be sure that bj length must be:k+1       
         y[index[i]]=0.0;
         for(int r=0;r<k+1;r++){
             y[index[i]]+=BCoeff[j-k+r]*bj[r];
@@ -124,9 +123,9 @@ int main(){
     };
     int k=3;
     int n=57;
-    int m=5;
-    double x[5]={
-        11.01,11,5.5,1,0.99
+    int m=6;
+    double x[6]={
+        11.01,11,5.5,3,1,0.99
     };
     double y[10]={};
     int ret=curvesplev(knots,BCoeff,n,k,x,y,m);
